@@ -247,7 +247,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 15 ),
                   // Category Tabs
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
