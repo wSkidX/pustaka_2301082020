@@ -2,9 +2,29 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 
 class AuthProvider extends ChangeNotifier {
+  String? _email;
+  String? _nama;
+  String? _errorMessage;
+  bool _isLoggedIn = false;
+  bool _isLoading = false;
+
+  String? get userName => _nama;
+  String? get email => _email;
+  String? get errorMessage => _errorMessage;
+  bool get isLoggedIn => _isLoggedIn;
+  bool get isLoading => _isLoading;
+
+  set errorMessage(String? value) {
+    _errorMessage = value;
+    notifyListeners();
+  }
+
+  set isLoading(bool value) {
+    _isLoading = value;
+    notifyListeners();
+  }
+
   final AuthService _authService = AuthService();
-  bool isLoading = false;
-  String? errorMessage;
 
   Future<bool> register({
     required String nama,
@@ -57,9 +77,15 @@ class AuthProvider extends ChangeNotifier {
       notifyListeners();
 
       if (response['status'] == 'success') {
+        _email = response['data']['email'];
+        _nama = response['data']['nama'];
+        _isLoggedIn = true;
+        _errorMessage = null;
+        notifyListeners();
         return true;
       } else {
-        errorMessage = response['message'];
+        _errorMessage = response['message'];
+        notifyListeners();
         return false;
       }
     } catch (e) {

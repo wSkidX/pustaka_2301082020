@@ -7,7 +7,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $email = mysqli_real_escape_string($conn, $_POST['email']);
     $password = md5($_POST['password']); // Menggunakan MD5
 
-    $query = "SELECT * FROM user WHERE email = '$email' AND password = '$password'";
+    $query = "SELECT * FROM anggota WHERE email = '$email' AND password = '$password'";
     $result = mysqli_query($conn, $query);
 
     if (mysqli_num_rows($result) > 0) {
@@ -36,4 +36,3 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 
 mysqli_close($conn);
-?> 
