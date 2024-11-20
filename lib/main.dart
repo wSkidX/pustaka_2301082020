@@ -4,9 +4,8 @@ import 'providers/auth_provider.dart';
 import 'screens/display_screen/homepage_screen.dart';
 import 'screens/information_screen/information_screen.dart';
 import 'screens/saved_screen/saved_screen.dart';
-//import 'screens/profile_screen/profile_screen.dart';
 import 'screens/auth_screen/login_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart' show SharedPreferences;
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,11 +35,7 @@ class MainApp extends StatelessWidget {
         primaryColor: const Color(0xFF0C356A),
         fontFamily: 'Outfit',
       ),
-      initialRoute: isLoggedIn ? '/main' : '/login',
-      routes: {
-        '/login': (context) => const LoginScreen(),
-        '/main': (context) => const MainScreen(),
-      },
+      home: isLoggedIn ? const MainScreen() : const LoginScreen(),
       debugShowCheckedModeBanner: false,
     );
   }
@@ -72,38 +67,34 @@ class _MainScreenState extends State<MainScreen> {
           children: [
             _screens[_selectedIndex],
             Positioned(
-              left: 60,
-              right: 60,
+              left: 20,
+              right: 20,
               bottom: 20,
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.9),
                   borderRadius: BorderRadius.circular(50),
                 ),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    // Home Button
                     _buildNavItem(
                       icon: Icons.home_outlined,
                       label: _selectedIndex == 0 ? 'Home' : null,
                       isSelected: _selectedIndex == 0,
                       onTap: () => _onItemTapped(0),
                     ),
-                    // Information Button
                     _buildNavItem(
                       icon: Icons.info_outline,
                       isSelected: _selectedIndex == 1,
                       onTap: () => _onItemTapped(1),
                     ),
-                    // Saved Button
                     _buildNavItem(
                       icon: Icons.bookmark_border,
                       isSelected: _selectedIndex == 2,
                       onTap: () => _onItemTapped(2),
                     ),
-                    // Profile Button
                     _buildNavItem(
                       icon: Icons.person_outline,
                       isSelected: _selectedIndex == 3,
@@ -128,9 +119,9 @@ class _MainScreenState extends State<MainScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 8,
+        padding: EdgeInsets.symmetric(
+          horizontal: label != null ? 12 : 8,
+          vertical: 6,
         ),
         decoration: BoxDecoration(
           color: isSelected ? Colors.orange : Colors.transparent,
@@ -142,16 +133,16 @@ class _MainScreenState extends State<MainScreen> {
             Icon(
               icon,
               color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
-              size: 24,
+              size: 22,
             ),
             if (label != null) ...[
-              const SizedBox(width: 8),
+              const SizedBox(width: 4),
               Text(
                 label,
                 style: const TextStyle(
                   color: Colors.white,
                   fontFamily: 'Outfit',
-                  fontSize: 16,
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
               ),
