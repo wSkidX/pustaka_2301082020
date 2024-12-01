@@ -4,9 +4,6 @@ import '../../models/book.dart';
 import '../../services/book_service.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../widgets/bottom_nav_widget.dart';
-import '../../screens/information_screen/information_screen.dart';
-import '../../screens/saved_screen/saved_screen.dart';
 
 class HomePageScreen extends StatefulWidget {
   const HomePageScreen({super.key});
@@ -22,7 +19,6 @@ class _HomePageScreenState extends State<HomePageScreen> {
   final BookService _bookService = BookService();
   List<Book> _books = [];
   bool _isLoading = true;
-  bool _isNavigating = false;
 
   @override
   void initState() {
@@ -31,13 +27,19 @@ class _HomePageScreenState extends State<HomePageScreen> {
   }
 
   Future<void> _loadBooks() async {
+    if (!mounted) return;
+    
     try {
       final books = await _bookService.getBooks();
+      if (!mounted) return;
+      
       setState(() {
         _books = books;
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
+      
       debugPrint('Error loading books: $e');
       setState(() {
         _isLoading = false;
@@ -49,25 +51,6 @@ class _HomePageScreenState extends State<HomePageScreen> {
   void dispose() {
     _pageController.dispose();
     super.dispose();
-  }
-
-  void _navigateToScreen(Widget screen) async {
-    if (_isNavigating) return;
-    
-    setState(() {
-      _isNavigating = true;
-    });
-
-    await Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => screen),
-    );
-
-    if (mounted) {
-      setState(() {
-        _isNavigating = false;
-      });
-    }
   }
 
   @override
@@ -92,18 +75,37 @@ class _HomePageScreenState extends State<HomePageScreen> {
                             Row(
                               children: [
                                 // Profile Picture
-                                Container(
-                                  width: 50,
-                                  height: 50,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: 2,
+                                Consumer<AuthProvider>(
+                                  builder: (context, auth, _) => Container(
+                                    width: 50,
+                                    height: 50,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 2,
+                                      ),
                                     ),
-                                    image: const DecorationImage(
-                                      image: AssetImage('assets/profile_placeholder.png'),
-                                      fit: BoxFit.cover,
+                                    child: ClipOval(
+                                      child: auth.foto != null && auth.foto!.isNotEmpty
+                                          ? CachedNetworkImage(
+                                              imageUrl: auth.foto!,
+                                              fit: BoxFit.cover,
+                                              placeholder: (context, url) => const CircularProgressIndicator(),
+                                              errorWidget: (context, url, error) {
+                                                print('Error loading image: $error');
+                                                return const Icon(
+                                                  Icons.person,
+                                                  size: 30,
+                                                  color: Colors.white,
+                                                );
+                                              },
+                                            )
+                                          : const Icon(
+                                              Icons.person,
+                                              size: 30,
+                                              color: Colors.white,
+                                            ),
                                     ),
                                   ),
                                 ),
@@ -310,7 +312,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
                                             ClipRRect(
                                               borderRadius: BorderRadius.circular(12),
                                               child: CachedNetworkImage(
-                                                imageUrl: 'assets/uploads/covers/${book.cover}',
+                                                imageUrl: book.cover,
                                                 width: 220,
                                                 height: 320,
                                                 fit: BoxFit.cover,
@@ -320,10 +322,17 @@ class _HomePageScreenState extends State<HomePageScreen> {
                                                     child: CircularProgressIndicator(),
                                                   ),
                                                 ),
-                                                errorWidget: (context, url, error) => Container(
-                                                  color: Colors.grey[300],
-                                                  child: const Icon(Icons.error),
-                                                ),
+                                                errorWidget: (context, url, error) {
+                                                  print('Error loading book cover: $error');
+                                                  return Container(
+                                                    color: Colors.grey[300],
+                                                    child: const Icon(
+                                                      Icons.book,
+                                                      size: 50,
+                                                      color: Colors.grey,
+                                                    ),
+                                                  );
+                                                },
                                               ),
                                             ),
                                             const SizedBox(height: 8),
@@ -364,25 +373,6 @@ class _HomePageScreenState extends State<HomePageScreen> {
                   ),
                 ),
               ),
-              BottomNavWidget(
-                selectedIndex: 0,
-                onItemTapped: (index) {
-                  if (index == 1) {
-                    _navigateToScreen(const InformationScreen());
-                  } else if (index == 2) {
-                    _navigateToScreen(const SavedScreen());
-                  }
-                },
-              ),
-              if (_isNavigating)
-                Container(
-                  color: Colors.black.withOpacity(0.5),
-                  child: const Center(
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                    ),
-                  ),
-                ),
             ],
           ),
         ),
@@ -482,87 +472,135 @@ class _HomePageScreenState extends State<HomePageScreen> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
-        child: SingleChildScrollView(
-          child: Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Cover Buku
-                Center(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: CachedNetworkImage(
-                      imageUrl: 'assets/uploads/covers/${book.cover}',
-                      width: 180,
-                      height: 260,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(
-                        color: Colors.grey[300],
-                        child: const Center(
-                          child: CircularProgressIndicator(),
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Cover Buku
+                    Center(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: CachedNetworkImage(
+                          imageUrl: book.cover,
+                          width: 180,
+                          height: 260,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) => Container(
+                            color: Colors.grey[300],
+                            child: const Center(
+                              child: CircularProgressIndicator(),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) {
+                            print('Error loading book cover: $error');
+                            return Container(
+                              color: Colors.grey[300],
+                              child: const Icon(
+                                Icons.book,
+                                size: 50,
+                                color: Colors.grey,
+                              ),
+                            );
+                          },
                         ),
                       ),
-                      errorWidget: (context, url, error) => Container(
-                        color: Colors.grey[300],
-                        child: const Icon(Icons.error),
-                      ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                // Informasi Buku
-                Text(
-                  book.judul,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF0C356A),
-                  ),
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 10),
-                _buildDetailRow('Pengarang', book.pengarang),
-                _buildDetailRow('Penerbit', book.penerbit),
-                _buildDetailRow('Tahun Terbit', book.tahunTerbit),
-                _buildDetailRow('Kategori', book.kategori),
-                const SizedBox(height: 20),
-                // Tombol Aksi
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Text(
-                        'Tutup',
-                        style: TextStyle(color: Color(0xFF0C356A)),
+                    const SizedBox(height: 20),
+                    // Informasi Buku
+                    Text(
+                      book.judul,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF0C356A),
                       ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(width: 10),
-                    ElevatedButton(
-                      onPressed: () {
-                        // TODO: Implementasi peminjaman buku
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF0C356A),
-                      ),
-                      child: const Text(
-                        'Pinjam Buku',
-                        style: TextStyle(color: Colors.white),
+                    const SizedBox(height: 10),
+                    _buildDetailRow('Pengarang', book.pengarang),
+                    _buildDetailRow('Penerbit', book.penerbit),
+                    _buildDetailRow('Tahun Terbit', book.tahunTerbit),
+                    _buildDetailRow('Kategori', book.kategori),
+                    const SizedBox(height: 20),
+                    // Tombol Aksi
+                    Consumer<AuthProvider>(
+                      builder: (context, auth, _) => Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              if (auth.userId == null) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Silakan login terlebih dahulu')),
+                                );
+                                return;
+                              }
+                              _toggleSaveBook(
+                                context,
+                                book.idBuku,
+                                auth.userId!,
+                                book.isSaved ? 'unsave' : 'save',
+                              );
+                            },
+                            icon: Icon(
+                              book.isSaved ? Icons.bookmark : Icons.bookmark_border,
+                              color: Colors.white,
+                              size: 20,
+                            ),
+                            label: Text(
+                              book.isSaved ? 'Tersimpan' : 'Simpan',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 14,
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF0C356A),
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ],
+              ),
             ),
-          ),
+            // Tombol Close (X)
+            Positioned(
+              right: 8,
+              top: 8,
+              child: IconButton(
+                icon: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.close,
+                    color: Color(0xFF0C356A),
+                    size: 20,
+                  ),
+                ),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -602,4 +640,42 @@ class _HomePageScreenState extends State<HomePageScreen> {
       ),
     );
   }
+
+  Future<void> _toggleSaveBook(
+    BuildContext context,
+    int bukuId,
+    int anggotaId,
+    String action,
+  ) async {
+    final bookService = BookService();
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    
+    try {
+      await bookService.toggleSaveBook(bukuId, anggotaId, action);
+      
+      if (!mounted) return;
+      
+      // Reload books untuk update status
+      await _loadBooks();
+      
+      if (!mounted) return;
+      
+      scaffoldMessenger.showSnackBar(
+        const SnackBar(
+          content: Text('Buku berhasil disimpan'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      
+      scaffoldMessenger.showSnackBar(
+        SnackBar(
+          content: Text(e.toString()),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 }
+

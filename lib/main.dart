@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'screens/auth_screen/login_screen.dart';
+import 'screens/main_screen.dart';
 
 void main() {
   runApp(
@@ -25,7 +26,15 @@ class MainApp extends StatelessWidget {
         primaryColor: const Color(0xFF0C356A),
         fontFamily: 'Outfit',
       ),
-      home: const LoginScreen(),
+      home: Consumer<AuthProvider>(
+        builder: (context, auth, _) {
+          return auth.isLoggedIn ? const MainScreen() : const LoginScreen();
+        },
+      ),
+      routes: {
+        '/login': (context) => const LoginScreen(),
+        '/main': (context) => const MainScreen(),
+      },
       debugShowCheckedModeBanner: false,
     );
   }

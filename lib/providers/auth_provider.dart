@@ -1,28 +1,28 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../models/auth.dart';
 
 class AuthProvider extends ChangeNotifier {
-  String? _email;
-  String? _nama;
+  Auth? _auth;
   String? _errorMessage;
-  bool _isLoggedIn = false;
   bool _isLoading = false;
+  String? _userName;
+  String? _email;
+  int? _userId;
+  int? _tingkat;
+  String? _foto;
+  String? _alamat;
 
-  String? get userName => _nama;
-  String? get email => _email;
+  Auth? get auth => _auth;
+  bool get isLoggedIn => _auth != null;
   String? get errorMessage => _errorMessage;
-  bool get isLoggedIn => _isLoggedIn;
   bool get isLoading => _isLoading;
-
-  set errorMessage(String? value) {
-    _errorMessage = value;
-    notifyListeners();
-  }
-
-  set isLoading(bool value) {
-    _isLoading = value;
-    notifyListeners();
-  }
+  String? get userName => _userName;
+  String? get email => _email;
+  int? get userId => _userId;
+  int? get tingkat => _tingkat;
+  String? get foto => _foto;
+  String? get alamat => _alamat;
 
   final AuthService _authService = AuthService();
 
@@ -32,8 +32,8 @@ class AuthProvider extends ChangeNotifier {
     required String password,
   }) async {
     try {
-      isLoading = true;
-      errorMessage = null;
+      _isLoading = true;
+      _errorMessage = null;
       notifyListeners();
 
       final response = await _authService.register(
@@ -42,30 +42,27 @@ class AuthProvider extends ChangeNotifier {
         password: password,
       );
 
-      isLoading = false;
-      notifyListeners();
-
       if (response['status'] == 'success') {
         return true;
       } else {
-        errorMessage = response['message'];
-        return false;
+        throw Exception(response['message'] ?? 'Registrasi gagal');
       }
     } catch (e) {
-      isLoading = false;
-      errorMessage = e.toString();
+      _errorMessage = e.toString();
+      throw Exception(_errorMessage);
+    } finally {
+      _isLoading = false;
       notifyListeners();
-      return false;
     }
   }
 
-  Future<bool> login({
+  Future<void> login({
     required String email,
     required String password,
   }) async {
     try {
-      isLoading = true;
-      errorMessage = null;
+      _isLoading = true;
+      _errorMessage = null;
       notifyListeners();
 
       final response = await _authService.login(
@@ -73,26 +70,44 @@ class AuthProvider extends ChangeNotifier {
         password: password,
       );
 
-      isLoading = false;
-      notifyListeners();
-
-      if (response['status'] == 'success') {
-        _email = response['data']['email'];
-        _nama = response['data']['nama'];
-        _isLoggedIn = true;
-        _errorMessage = null;
-        notifyListeners();
-        return true;
+      if (response['status'] == 'success' && response['data'] != null) {
+        _auth = Auth.fromJson(response['data']);
+        setUserData(response['data']);
       } else {
-        _errorMessage = response['message'];
-        notifyListeners();
-        return false;
+        throw Exception(response['message'] ?? 'Login gagal');
       }
     } catch (e) {
-      isLoading = false;
-      errorMessage = e.toString();
+      _errorMessage = e.toString();
+      throw Exception(_errorMessage);
+    } finally {
+      _isLoading = false;
       notifyListeners();
-      return false;
     }
+  }
+
+  void logout() {
+    _auth = null;
+    clearUserData();
+    notifyListeners();
+  }
+
+  void setUserData(Map<String, dynamic> userData) {
+    _userName = userData['nama'];
+    _email = userData['email'];
+    _userId = int.parse(userData['id'].toString());
+    _tingkat = int.parse(userData['tingkat'].toString());
+    _foto = userData['foto'];
+    _alamat = userData['alamat'];
+    notifyListeners();
+  }
+
+  void clearUserData() {
+    _userName = null;
+    _email = null;
+    _userId = null;
+    _tingkat = null;
+    _foto = null;
+    _alamat = null;
+    notifyListeners();
   }
 } 

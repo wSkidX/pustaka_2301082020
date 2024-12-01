@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import 'register_screen.dart';
-import '../display_screen/homepage_screen.dart';
+import '../main_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -24,42 +24,37 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  Future<void> _login() async {
+  void _login() async {
     if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
-
+      setState(() => _isLoading = true);
+      
       try {
-        final success = await context.read<AuthProvider>().login(
+        await context.read<AuthProvider>().login(
           email: _emailController.text,
           password: _passwordController.text,
         );
-
+        
         if (mounted) {
-          if (success) {
-            // Navigate to HomeScreen
-            Navigator.pushReplacement(
+          if (context.read<AuthProvider>().isLoggedIn) {
+            Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(builder: (context) => const HomePageScreen()),
-            );
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  context.read<AuthProvider>().errorMessage ?? 
-                  'Login gagal. Silakan coba lagi.',
-                ),
-                backgroundColor: Colors.red,
-              ),
+              MaterialPageRoute(builder: (context) => const MainScreen()),
+              (route) => false,
             );
           }
         }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(e.toString().replaceAll('Exception: ', '')),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       } finally {
         if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
+          setState(() => _isLoading = false);
         }
       }
     }
