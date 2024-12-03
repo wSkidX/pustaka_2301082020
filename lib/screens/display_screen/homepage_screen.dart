@@ -3,7 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/book.dart';
 import '../../services/book_service.dart';
 import 'package:provider/provider.dart';
-import '../../providers/auth_provider.dart';
+import '../../providers/anggota_provider.dart';
 
 class HomePageScreen extends StatefulWidget {
   const HomePageScreen({super.key});
@@ -75,8 +75,8 @@ class _HomePageScreenState extends State<HomePageScreen> {
                             Row(
                               children: [
                                 // Profile Picture
-                                Consumer<AuthProvider>(
-                                  builder: (context, auth, _) => Container(
+                                Consumer<AnggotaProvider>(
+                                  builder: (context, anggota, _) => Container(
                                     width: 50,
                                     height: 50,
                                     decoration: BoxDecoration(
@@ -87,9 +87,9 @@ class _HomePageScreenState extends State<HomePageScreen> {
                                       ),
                                     ),
                                     child: ClipOval(
-                                      child: auth.foto != null && auth.foto!.isNotEmpty
+                                    child: anggota.foto != null && anggota.foto!.isNotEmpty
                                           ? CachedNetworkImage(
-                                              imageUrl: auth.foto!,
+                                              imageUrl: anggota.foto!,
                                               fit: BoxFit.cover,
                                               placeholder: (context, url) => const CircularProgressIndicator(),
                                               errorWidget: (context, url, error) {
@@ -431,9 +431,9 @@ class _HomePageScreenState extends State<HomePageScreen> {
                 fontSize: 16,
               ),
             ),
-            Consumer<AuthProvider>(
-              builder: (context, auth, _) => Text(
-                auth.userName ?? 'User',
+            Consumer<AnggotaProvider>(
+              builder: (context, anggota, _) => Text(
+                anggota.userName ?? 'User',
                 style: const TextStyle(
                   fontFamily: 'Outfit',
                   color: Colors.white,
@@ -534,13 +534,13 @@ class _HomePageScreenState extends State<HomePageScreen> {
                     _buildDetailRow('Kategori', book.kategori),
                     const SizedBox(height: 20),
                     // Tombol Aksi
-                    Consumer<AuthProvider>(
-                      builder: (context, auth, _) => Row(
+                    Consumer<AnggotaProvider>(
+                      builder: (context, anggota, _) => Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           ElevatedButton.icon(
                             onPressed: () {
-                              if (auth.userId == null) {
+                              if (anggota.userId == null) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('Silakan login terlebih dahulu')),
                                 );
@@ -549,7 +549,7 @@ class _HomePageScreenState extends State<HomePageScreen> {
                               _toggleSaveBook(
                                 context,
                                 book.idBuku,
-                                auth.userId!,
+                                anggota.userId!,
                                 book.isSaved ? 'unsave' : 'save',
                               );
                             },

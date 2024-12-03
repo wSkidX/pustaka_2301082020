@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'providers/auth_provider.dart';
-import 'screens/auth_screen/login_screen.dart';
+import 'providers/anggota_provider.dart';
+import 'screens/anggota_screen/login_screen.dart';
 import 'screens/main_screen.dart';
 
 void main() {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => AnggotaProvider()),
       ],
       child: const MainApp(),
     ),
@@ -26,9 +26,9 @@ class MainApp extends StatelessWidget {
         primaryColor: const Color(0xFF0C356A),
         fontFamily: 'Outfit',
       ),
-      home: Consumer<AuthProvider>(
-        builder: (context, auth, _) {
-          return auth.isLoggedIn ? const MainScreen() : const LoginScreen();
+      home: Consumer<AnggotaProvider>(
+        builder: (context, anggota, _) {
+          return anggota.isLoggedIn ? const MainScreen() : const LoginScreen();
         },
       ),
       routes: {

@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import '../../providers/auth_provider.dart';
-import '../../services/auth_service.dart';
+import '../../providers/anggota_provider.dart';
+import '../../services/anggota_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -18,16 +18,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  final AuthService _authService = AuthService();
+  final AuthService _anggotaService = AuthService();
   XFile? _imageFile;
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
-    final auth = context.read<AuthProvider>();
-    _nameController.text = auth.userName ?? '';
-    _emailController.text = auth.email ?? '';
+    final anggota = context.read<AnggotaProvider>();
+    _nameController.text = anggota.userName ?? '';
+    _emailController.text = anggota.email ?? '';
   }
 
   @override
@@ -53,11 +53,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     setState(() => _isLoading = true);
     final scaffoldMessenger = ScaffoldMessenger.of(context);
-    final auth = context.read<AuthProvider>();
+    final anggota = context.read<AnggotaProvider>();
 
     try {
-      final response = await _authService.updateProfile(
-        id: auth.userId!,
+      final response = await _anggotaService.updateProfile(
+        id: anggota.userId!,
         nama: _nameController.text,
         email: _emailController.text,
         imageFile: _imageFile,
@@ -66,7 +66,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       if (!mounted) return;
 
       if (response['status'] == 'success') {
-        context.read<AuthProvider>().setUserData(response['data']);
+        context.read<AnggotaProvider>().setUserData(response['data']);
         Navigator.pop(context);
         scaffoldMessenger.showSnackBar(
           const SnackBar(
@@ -111,8 +111,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
           child: Column(
             children: [
               // Profile Image
-              Consumer<AuthProvider>(
-                builder: (context, auth, _) => GestureDetector(
+              Consumer<AnggotaProvider>(
+                builder: (context, anggota, _) => GestureDetector(
                   onTap: _pickImage,
                   child: Stack(
                     children: [
@@ -134,9 +134,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                                       height: 100,
                                       fit: BoxFit.cover,
                                     )
-                              : auth.foto != null && auth.foto!.isNotEmpty
+                              : anggota.foto != null && anggota.foto!.isNotEmpty
                                   ? CachedNetworkImage(
-                                      imageUrl: 'http://localhost/pustaka_2301082020/${auth.foto}',
+                                      imageUrl: 'http://localhost/pustaka_2301082020/${anggota.foto}',
                                       width: 100,
                                       height: 100,
                                       fit: BoxFit.cover,

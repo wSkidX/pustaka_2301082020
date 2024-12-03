@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/auth_provider.dart';
-import '../auth_screen/login_screen.dart';
+import '../../providers/anggota_provider.dart';
+import '../anggota_screen/login_screen.dart';
 import 'settings_screen.dart';
 import 'editProfile_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -15,7 +15,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   void _logout() {
-    context.read<AuthProvider>().logout();
+    context.read<AnggotaProvider>().logout();
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => const LoginScreen()),
@@ -25,7 +25,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<AuthProvider>();
+    final anggota = context.watch<AnggotaProvider>();
     
     return Scaffold(
       backgroundColor: const Color(0xFF0C356A),
@@ -35,16 +35,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
           child: Column(
             children: [
               // Profile Header dengan tombol edit
-              Consumer<AuthProvider>(
-                builder: (context, auth, _) => Stack(
+              Consumer<AnggotaProvider>(
+                builder: (context, anggota, _) => Stack(
                   children: [
                     CircleAvatar(
                       radius: 50,
                       backgroundColor: Colors.white,
                       child: ClipOval(
-                        child: auth.foto != null && auth.foto!.isNotEmpty
+                        child: anggota.foto != null && anggota.foto!.isNotEmpty
                             ? CachedNetworkImage(
-                                imageUrl: auth.foto!,
+                                imageUrl: anggota.foto!,
                                 width: 100,
                                 height: 100,
                                 fit: BoxFit.cover,
@@ -94,7 +94,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               const SizedBox(height: 20),
               Text(
-                auth.userName ?? 'User Name',
+                anggota.userName ?? 'User Name',
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 24,
@@ -102,7 +102,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ),
               Text(
-                auth.email ?? 'email@example.com',
+                anggota.email ?? 'email@example.com',
                 style: TextStyle(
                   color: Colors.white.withOpacity(0.8),
                   fontSize: 16,

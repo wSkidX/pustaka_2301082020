@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
-import '../models/auth.dart';
+import '../models/anggota.dart';
 
-class AuthProvider extends ChangeNotifier {
-  Auth? _auth;
+class AnggotaProvider extends ChangeNotifier {
+  Anggota? _anggota;
   String? _errorMessage;
   bool _isLoading = false;
   String? _userName;
@@ -13,8 +13,8 @@ class AuthProvider extends ChangeNotifier {
   String? _foto;
   String? _alamat;
 
-  Auth? get auth => _auth;
-  bool get isLoggedIn => _auth != null;
+  Anggota? get anggota => _anggota;
+  bool get isLoggedIn => _anggota != null;
   String? get errorMessage => _errorMessage;
   bool get isLoading => _isLoading;
   String? get userName => _userName;

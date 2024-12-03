@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/auth_provider.dart';
+import '../../providers/anggota_provider.dart';
 import '../main_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -107,7 +107,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         if (_formKey.currentState!.validate()) {
                           setState(() => _isLoading = true);
                           try {
-                            await context.read<AuthProvider>().register(
+                            await context.read<AnggotaProvider>().register(
                               nama: _namaController.text,
                               email: _emailController.text,
                               password: _passwordController.text,

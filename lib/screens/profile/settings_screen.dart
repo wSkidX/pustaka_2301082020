@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../providers/auth_provider.dart';
+import '../../providers/anggota_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -15,7 +15,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   
   @override
   Widget build(BuildContext context) {
-    final auth = context.watch<AuthProvider>();
+    final anggota = context.watch<AnggotaProvider>();
     
     return Scaffold(
       backgroundColor: const Color(0xFF0C356A),
@@ -53,7 +53,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             const SizedBox(height: 15),
-            _buildProfileTile(auth),
+            _buildProfileTile(anggota),
             const Divider(height: 30),
 
             // Aplikasi Section
@@ -128,7 +128,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildProfileTile(AuthProvider auth) {
+  Widget _buildProfileTile(AnggotaProvider anggota) {
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
@@ -146,7 +146,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ),
         title: Text(
-          auth.userName ?? 'User Name',
+          anggota.userName ?? 'User Name',
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 16,
@@ -157,14 +157,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             const SizedBox(height: 4),
             Text(
-              auth.email ?? 'email@example.com',
+              anggota.email ?? 'email@example.com',
               style: TextStyle(
                 color: Colors.grey[600],
               ),
             ),
             const SizedBox(height: 4),
             Text(
-              'Level: ${auth.tingkat == 1 ? "Admin" : "Anggota"}',
+              'Level: ${anggota.tingkat == 1 ? "Admin" : "Anggota"}',
               style: TextStyle(
                 color: Colors.grey[600],
               ),
