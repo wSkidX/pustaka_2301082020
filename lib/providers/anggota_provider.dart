@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/auth_service.dart';
+import '../services/anggota_service.dart';
 import '../models/anggota.dart';
 
 class AnggotaProvider extends ChangeNotifier {
@@ -12,6 +12,7 @@ class AnggotaProvider extends ChangeNotifier {
   int? _tingkat;
   String? _foto;
   String? _alamat;
+  String? _nim;
 
   Anggota? get anggota => _anggota;
   bool get isLoggedIn => _anggota != null;
@@ -23,6 +24,7 @@ class AnggotaProvider extends ChangeNotifier {
   int? get tingkat => _tingkat;
   String? get foto => _foto;
   String? get alamat => _alamat;
+  String? get nim => _nim;
 
   final AuthService _authService = AuthService();
 
@@ -71,7 +73,7 @@ class AnggotaProvider extends ChangeNotifier {
       );
 
       if (response['status'] == 'success' && response['data'] != null) {
-        _auth = Auth.fromJson(response['data']);
+        _anggota = Anggota.fromJson(response['data']);
         setUserData(response['data']);
       } else {
         throw Exception(response['message'] ?? 'Login gagal');
@@ -86,7 +88,7 @@ class AnggotaProvider extends ChangeNotifier {
   }
 
   void logout() {
-    _auth = null;
+    _anggota = null;
     clearUserData();
     notifyListeners();
   }
@@ -97,6 +99,7 @@ class AnggotaProvider extends ChangeNotifier {
     _userId = int.parse(userData['id'].toString());
     _tingkat = int.parse(userData['tingkat'].toString());
     _foto = userData['foto'];
+    _nim = userData['nim'];
     _alamat = userData['alamat'];
     notifyListeners();
   }
@@ -107,6 +110,7 @@ class AnggotaProvider extends ChangeNotifier {
     _userId = null;
     _tingkat = null;
     _foto = null;
+    _nim = null;
     _alamat = null;
     notifyListeners();
   }

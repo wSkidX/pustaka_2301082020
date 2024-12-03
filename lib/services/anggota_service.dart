@@ -72,6 +72,8 @@ class AuthService {
     required int id,
     required String nama,
     required String email,
+    String? nim,
+    String? alamat,
     XFile? imageFile,
   }) async {
     try {
@@ -86,6 +88,8 @@ class AuthService {
       request.fields['id'] = id.toString();
       request.fields['nama'] = nama;
       request.fields['email'] = email;
+      if (nim != null) request.fields['nim'] = nim;
+      if (alamat != null) request.fields['alamat'] = alamat;
 
       if (imageFile != null) {
         print('Preparing to upload image: ${imageFile.path}');

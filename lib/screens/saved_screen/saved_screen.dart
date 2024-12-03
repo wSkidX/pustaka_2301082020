@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/book.dart';
-import '../../services/book_service.dart';
+import '../../services/books_service.dart';
 
 class SavedScreen extends StatefulWidget {
   const SavedScreen({super.key});
@@ -25,7 +25,7 @@ class _SavedScreenState extends State<SavedScreen> {
     if (!mounted) return;
     
     try {
-      final books = await _bookService.getSavedBooks();
+      final books = await _bookService.getBooks(category: 'saved');
       if (!mounted) return;
       
       setState(() {

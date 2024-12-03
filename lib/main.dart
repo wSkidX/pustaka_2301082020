@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/anggota_provider.dart';
+import 'providers/peminjaman_provider.dart';
+import 'providers/pengembalian_provider.dart';
 import 'screens/anggota_screen/login_screen.dart';
 import 'screens/main_screen.dart';
 
@@ -9,6 +11,8 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AnggotaProvider()),
+        ChangeNotifierProvider(create: (_) => PeminjamanProvider()),
+        ChangeNotifierProvider(create: (_) => PengembalianProvider()),
       ],
       child: const MainApp(),
     ),

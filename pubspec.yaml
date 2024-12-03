@@ -16,6 +16,7 @@ dependencies:
   shared_preferences: ^2.3.2
   convert: ^3.1.2
   typed_data: ^1.4.0
+  intl: ^0.20.1
   
   
 
@@ -32,4 +33,3 @@ flutter:
     - assets/
     - assets/images/
     - assets/images/banner/
-    - assets/uploads/covers/

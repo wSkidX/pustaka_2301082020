@@ -18,6 +18,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
+  final _nimController = TextEditingController();
+  final _alamatController = TextEditingController();
   final AuthService _anggotaService = AuthService();
   XFile? _imageFile;
   bool _isLoading = false;
@@ -28,12 +30,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final anggota = context.read<AnggotaProvider>();
     _nameController.text = anggota.userName ?? '';
     _emailController.text = anggota.email ?? '';
+    _nimController.text = anggota.nim ?? '';
+    _alamatController.text = anggota.alamat ?? '';
   }
 
   @override
   void dispose() {
     _nameController.dispose();
     _emailController.dispose();
+    _nimController.dispose();
+    _alamatController.dispose();
     super.dispose();
   }
 
@@ -60,6 +66,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
         id: anggota.userId!,
         nama: _nameController.text,
         email: _emailController.text,
+        nim: _nimController.text,
+        alamat: _alamatController.text,
         imageFile: _imageFile,
       );
 
@@ -176,6 +184,19 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               ),
               const SizedBox(height: 30),
 
+              // NIM Field
+              TextFormField(
+                controller: _nimController,
+                decoration: InputDecoration(
+                  labelText: 'NIM',
+                  prefixIcon: const Icon(Icons.numbers),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
               // Nama Field
               TextFormField(
                 controller: _nameController,
@@ -215,6 +236,21 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   return null;
                 },
               ),
+              const SizedBox(height: 20),
+
+              // Alamat Field
+              TextFormField(
+                controller: _alamatController,
+                decoration: InputDecoration(
+                  labelText: 'Alamat',
+                  prefixIcon: const Icon(Icons.location_on),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                maxLines: 3,
+              ),
+
               const SizedBox(height: 30),
 
               // Submit Button

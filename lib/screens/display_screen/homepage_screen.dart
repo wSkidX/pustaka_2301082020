@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/book.dart';
-import '../../services/book_service.dart';
+import '../../services/books_service.dart';
 import 'package:provider/provider.dart';
 import '../../providers/anggota_provider.dart';
+import '../book/borrow_book_screen.dart';
 
 class HomePageScreen extends StatefulWidget {
   const HomePageScreen({super.key});
@@ -29,8 +30,10 @@ class _HomePageScreenState extends State<HomePageScreen> {
   Future<void> _loadBooks() async {
     if (!mounted) return;
     
+    setState(() => _isLoading = true);
+    
     try {
-      final books = await _bookService.getBooks();
+      final books = await _bookService.getBooks(category: _selectedCategory);
       if (!mounted) return;
       
       setState(() {
@@ -42,9 +45,24 @@ class _HomePageScreenState extends State<HomePageScreen> {
       
       debugPrint('Error loading books: $e');
       setState(() {
+        _books = [];
         _isLoading = false;
       });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Gagal memuat buku: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
+  }
+
+  void _onCategorySelected(String category) {
+    setState(() {
+      _selectedCategory = category;
+    });
+    _loadBooks();
   }
 
   @override
@@ -270,10 +288,9 @@ class _HomePageScreenState extends State<HomePageScreen> {
                               scrollDirection: Axis.horizontal,
                               child: Row(
                                 children: [
-                                  _buildCategoryTab('Terbaru', isSelected: _selectedCategory == 'Terbaru'),
-                                  _buildCategoryTab('Populer', isSelected: _selectedCategory == 'Populer'),
-                                  _buildCategoryTab('Paling banyak di pinjam', 
-                                    isSelected: _selectedCategory == 'Paling banyak di pinjam'),
+                                  _buildCategoryButton('Terbaru'),
+                                  _buildCategoryButton('Populer'),
+                                  _buildCategoryButton('Paling banyak di pinjam'),
                                 ],
                               ),
                             ),
@@ -309,31 +326,48 @@ class _HomePageScreenState extends State<HomePageScreen> {
                                           crossAxisAlignment: CrossAxisAlignment.start,
                                           children: [
                                             // Cover Buku
-                                            ClipRRect(
-                                              borderRadius: BorderRadius.circular(12),
-                                              child: CachedNetworkImage(
-                                                imageUrl: book.cover,
-                                                width: 220,
-                                                height: 320,
-                                                fit: BoxFit.cover,
-                                                placeholder: (context, url) => Container(
-                                                  color: Colors.grey[300],
-                                                  child: const Center(
-                                                    child: CircularProgressIndicator(),
+                                            Stack(
+                                              children: [
+                                                ClipRRect(
+                                                  borderRadius: BorderRadius.circular(12),
+                                                  child: CachedNetworkImage(
+                                                    imageUrl: book.cover,
+                                                    width: 220,
+                                                    height: 320,
+                                                    fit: BoxFit.cover,
+                                                    placeholder: (context, url) => Container(
+                                                      color: Colors.grey[300],
+                                                      child: const Center(
+                                                        child: CircularProgressIndicator(),
+                                                      ),
+                                                    ),
+                                                    errorWidget: (context, url, error) => Container(
+                                                      color: Colors.grey[300],
+                                                      child: const Icon(Icons.error),
+                                                    ),
                                                   ),
                                                 ),
-                                                errorWidget: (context, url, error) {
-                                                  print('Error loading book cover: $error');
-                                                  return Container(
-                                                    color: Colors.grey[300],
-                                                    child: const Icon(
-                                                      Icons.book,
-                                                      size: 50,
-                                                      color: Colors.grey,
+                                                Positioned(
+                                                  bottom: 8,
+                                                  right: 8,
+                                                  child: ElevatedButton.icon(
+                                                    onPressed: () {
+                                                      Navigator.push(
+                                                        context,
+                                                        MaterialPageRoute(
+                                                          builder: (context) => BorrowBookScreen(book: book),
+                                                        ),
+                                                      );
+                                                    },
+                                                    icon: const Icon(Icons.book),
+                                                    label: const Text('Pinjam'),
+                                                    style: ElevatedButton.styleFrom(
+                                                      backgroundColor: const Color(0xFF0C356A),
+                                                      foregroundColor: Colors.white,
                                                     ),
-                                                  );
-                                                },
-                                              ),
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                             const SizedBox(height: 8),
                                             // Judul Buku
@@ -380,39 +414,20 @@ class _HomePageScreenState extends State<HomePageScreen> {
     );
   }
 
-  Widget _buildCategoryTab(String text, {bool isSelected = false}) {
-    return Container(
-      margin: const EdgeInsets.only(right: 12),
-      child: Material(
-        color: isSelected ? Colors.white : Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
-        child: InkWell(
-          onTap: () {
-            setState(() {
-              _selectedCategory = text;
-            });
-          },
-          borderRadius: BorderRadius.circular(20),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              border: Border.all(
-                color: Colors.white,
-                width: 1,
-              ),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              text,
-              style: TextStyle(
-                fontFamily: 'Outfit',
-                color: isSelected ? const Color(0xFF0C356A) : Colors.white,
-                fontSize: 14,
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              ),
-            ),
+  Widget _buildCategoryButton(String category) {
+    final isSelected = _selectedCategory == category;
+    return Padding(
+      padding: const EdgeInsets.only(right: 8),
+      child: ElevatedButton(
+        onPressed: () => _onCategorySelected(category),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: isSelected ? Colors.white : Colors.white.withOpacity(0.1),
+          foregroundColor: isSelected ? const Color(0xFF0C356A) : Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
         ),
+        child: Text(category),
       ),
     );
   }

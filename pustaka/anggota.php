@@ -122,6 +122,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_GET['action']) && $_GET['act
         $id = $_POST['id'] ?? '';
         $nama = $_POST['nama'] ?? '';
         $email = $_POST['email'] ?? '';
+        $nim = $_POST['nim'] ?? '';
+        $alamat = $_POST['alamat'] ?? '';
         
         if (empty($id) || empty($nama) || empty($email)) {
             throw new Exception('Semua field harus diisi');
@@ -165,14 +167,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_GET['action']) && $_GET['act
         }
 
         if ($foto) {
-            $stmt = $pdo->prepare("UPDATE anggota SET nama = ?, email = ?, foto = ? WHERE id = ?");
-            $stmt->execute([$nama, $email, $foto, $id]);
+            $stmt = $pdo->prepare("UPDATE anggota SET nama = ?, email = ?, nim = ?, alamat = ?, foto = ? WHERE id = ?");
+            $stmt->execute([$nama, $email, $nim, $alamat, $foto, $id]);
         } else {
-            $stmt = $pdo->prepare("UPDATE anggota SET nama = ?, email = ? WHERE id = ?");
-            $stmt->execute([$nama, $email, $id]);
+            $stmt = $pdo->prepare("UPDATE anggota SET nama = ?, email = ?, nim = ?, alamat = ? WHERE id = ?");
+            $stmt->execute([$nama, $email, $nim, $alamat, $id]);
         }
 
-        $stmt = $pdo->prepare("SELECT id, nama, email, tingkat, foto FROM anggota WHERE id = ?");
+        $stmt = $pdo->prepare("SELECT id, nama, email, tingkat, nim, alamat, foto FROM anggota WHERE id = ?");
         $stmt->execute([$id]);
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
