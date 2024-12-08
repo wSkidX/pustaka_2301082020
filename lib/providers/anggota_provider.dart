@@ -1,117 +1,164 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import '../services/anggota_service.dart';
+import 'package:http/http.dart' as http;
 import '../models/anggota.dart';
 
-class AnggotaProvider extends ChangeNotifier {
-  Anggota? _anggota;
-  String? _errorMessage;
-  bool _isLoading = false;
-  String? _userName;
-  String? _email;
-  int? _userId;
-  int? _tingkat;
-  String? _foto;
-  String? _alamat;
-  String? _nim;
+class AnggotaProvider with ChangeNotifier {
+  // Ubah baseUrl untuk emulator Android
+  final String _baseUrl = 'http://localhost/pustaka_2301082020/pustaka/anggota.php';
+  List<Anggota> _anggotaList = [];
+  Anggota? _currentAnggota;
 
-  Anggota? get anggota => _anggota;
-  bool get isLoggedIn => _anggota != null;
-  String? get errorMessage => _errorMessage;
-  bool get isLoading => _isLoading;
-  String? get userName => _userName;
-  String? get email => _email;
-  int? get userId => _userId;
-  int? get tingkat => _tingkat;
-  String? get foto => _foto;
-  String? get alamat => _alamat;
-  String? get nim => _nim;
+  List<Anggota> get anggotaList => _anggotaList;
+  Anggota? get currentAnggota => _currentAnggota;
 
-  final AuthService _authService = AuthService();
-
-  Future<bool> register({
-    required String nama,
-    required String email,
-    required String password,
-  }) async {
+  // Mengambil semua data anggota
+  Future<void> fetchAnggota() async {
     try {
-      _isLoading = true;
-      _errorMessage = null;
-      notifyListeners();
-
-      final response = await _authService.register(
-        nama: nama,
-        email: email,
-        password: password,
-      );
-
-      if (response['status'] == 'success') {
-        return true;
-      } else {
-        throw Exception(response['message'] ?? 'Registrasi gagal');
+      final response = await http.get(Uri.parse(_baseUrl));
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'success') {
+          final List<Anggota> loadedAnggota = [];
+          for (var anggota in data['data']) {
+            loadedAnggota.add(Anggota(
+              id: anggota['id'],
+              nim: anggota['nim'],
+              nama: anggota['nama'],
+              alamat: anggota['alamat'],
+              email: anggota['email'],
+              password: anggota['password'],
+              tingkat: anggota['tingkat'],
+              foto: anggota['foto'],
+            ));
+          }
+          _anggotaList = loadedAnggota;
+          notifyListeners();
+        }
       }
-    } catch (e) {
-      _errorMessage = e.toString();
-      throw Exception(_errorMessage);
-    } finally {
-      _isLoading = false;
-      notifyListeners();
+    } catch (error) {
+      rethrow;
     }
   }
 
-  Future<void> login({
-    required String email,
-    required String password,
-  }) async {
+  // Menambah anggota baru
+  Future<void> addAnggota(Anggota anggota) async {
     try {
-      _isLoading = true;
-      _errorMessage = null;
-      notifyListeners();
-
-      final response = await _authService.login(
-        email: email,
-        password: password,
+      final response = await http.post(
+        Uri.parse(_baseUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'nim': anggota.nim,
+          'nama': anggota.nama,
+          'alamat': anggota.alamat,
+          'email': anggota.email,
+          'password': anggota.password,
+          'tingkat': 2,
+          'foto': ''
+        }),
       );
 
-      if (response['status'] == 'success' && response['data'] != null) {
-        _anggota = Anggota.fromJson(response['data']);
-        setUserData(response['data']);
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] != 'success') {
+          throw Exception(data['message'] ?? 'Gagal menambahkan anggota');
+        }
       } else {
-        throw Exception(response['message'] ?? 'Login gagal');
+        throw Exception('Gagal menambahkan anggota: ${response.statusCode}');
       }
-    } catch (e) {
-      _errorMessage = e.toString();
-      throw Exception(_errorMessage);
-    } finally {
-      _isLoading = false;
-      notifyListeners();
+    } catch (error) {
+      print('Error in addAnggota: $error');
+      rethrow;
     }
   }
 
-  void logout() {
-    _anggota = null;
-    clearUserData();
+  // Mengupdate data anggota
+  Future<void> updateAnggota(int id, Anggota anggota) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$_baseUrl?id=$id'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'nama': anggota.nama,
+          'nim': anggota.nim,
+          'alamat': anggota.alamat,
+          'email': anggota.email,
+          'tingkat': anggota.tingkat,
+          'foto': anggota.foto,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'success') {
+          await fetchAnggota(); // Refresh data setelah update
+        }
+      }
+    } catch (error) {
+      rethrow;
+    }
+  }
+
+  // Menghapus data anggota
+  Future<void> deleteAnggota(int id) async {
+    try {
+      final response = await http.delete(Uri.parse('$_baseUrl?id=$id'));
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'success') {
+          await fetchAnggota(); // Refresh data setelah menghapus
+        }
+      }
+    } catch (error) {
+      rethrow;
+    }
+  }
+
+  // Method untuk set anggota yang login
+  void setCurrentAnggota(Anggota anggota) {
+    _currentAnggota = anggota;
     notifyListeners();
   }
 
-  void setUserData(Map<String, dynamic> userData) {
-    _userName = userData['nama'];
-    _email = userData['email'];
-    _userId = int.parse(userData['id'].toString());
-    _tingkat = int.parse(userData['tingkat'].toString());
-    _foto = userData['foto'];
-    _nim = userData['nim'];
-    _alamat = userData['alamat'];
-    notifyListeners();
-  }
+  Future<void> login(String email, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse(_baseUrl),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'method': 'login',
+          'email': email,
+          'password': password,
+        }),
+      );
 
-  void clearUserData() {
-    _userName = null;
-    _email = null;
-    _userId = null;
-    _tingkat = null;
-    _foto = null;
-    _nim = null;
-    _alamat = null;
-    notifyListeners();
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'success') {
+          final anggota = Anggota(
+            id: int.parse(data['data']['id'].toString()),
+            nim: data['data']['nim'],
+            nama: data['data']['nama'],
+            alamat: data['data']['alamat'],
+            email: data['data']['email'],
+            password: data['data']['password'],
+            tingkat: int.parse(data['data']['tingkat'].toString()),
+            foto: data['data']['foto'],
+          );
+          setCurrentAnggota(anggota);
+        } else {
+          throw Exception(data['message'] ?? 'Login gagal');
+        }
+      } else {
+        throw Exception('Login gagal');
+      }
+    } catch (error) {
+      rethrow;
+    }
   }
-} 
+}

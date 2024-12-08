@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 03 Des 2024 pada 15.42
+-- Waktu pembuatan: 07 Des 2024 pada 18.49
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -48,7 +48,8 @@ INSERT INTO `anggota` (`id`, `nim`, `nama`, `alamat`, `email`, `password`, `ting
 (20, '', 'jaki', '', 'jaki@gmail.com', '$2y$10$naXXMhDNh4lB4kJHgYnuTObJ.kOqb7sSwwTRbgOpqyKcnz1kKf9Ji', 1, ''),
 (21, '', 'franco', '', 'franco@gmail.com', '$2y$10$ZgWlLQleMgMoLNj2kOtCm.e1.cX2q0HroIZ4Oa4fS.GbnJ3graBfq', 1, ''),
 (22, '', 'galang', '', 'galang@gmail.com', '$2y$10$AIwgelnn6j1f8H1HXC0nlub0nR5Eg1pyOwfkA/A9E7DdvRLU1hFHy', 1, 'uploads/674d370ecc98d.png'),
-(23, '', 'fiffwadadasdasdawa', '', 'test@gmail.com', '$2y$10$ZVlVHs47kMQnTz9F9d6dGORt/PlUhEwWkhsL/MlaGeOD9S0RVaXmW', 2, '');
+(23, '', 'fiffwadadasdasdawa', '', 'test@gmail.com', '$2y$10$ZVlVHs47kMQnTz9F9d6dGORt/PlUhEwWkhsL/MlaGeOD9S0RVaXmW', 2, ''),
+(24, '22323', 'hitam', 'padang', 'hitam@gmail.com', '$2y$10$ZePWxKnRLuE3Rq28ujk9Y.pBcqfszbab9Nk6kwEUY8fKYUCLTX0T6', 2, '');
 
 -- --------------------------------------------------------
 
@@ -64,20 +65,17 @@ CREATE TABLE `buku` (
   `tahun_terbit` date NOT NULL,
   `kategori` varchar(100) NOT NULL,
   `cover` varchar(500) NOT NULL,
-  `deskripsi` varchar(500) NOT NULL,
-  `book_banner` varchar(500) NOT NULL,
-  `ulasan` int(11) NOT NULL,
-  `is_saved` tinyint(1) DEFAULT 0
+  `deskripsi` varchar(500) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data untuk tabel `buku`
 --
 
-INSERT INTO `buku` (`id_buku`, `judul`, `pengarang`, `penerbit`, `tahun_terbit`, `kategori`, `cover`, `deskripsi`, `book_banner`, `ulasan`, `is_saved`) VALUES
-(1, 'solo lepeling', 'aaaaaa', 'jeeawdokwaodwka', '2018-11-01', 'komik', 'book1.jpg', 'buku komik mantap banget', 'banner_book1.png', 5, 1),
-(2, 'jujutsu kaisen', 'babun', 'gramded', '2015-11-01', 'komik', 'book2.jpg', 'mantap', 'book_banner2', 10, 0),
-(3, 'naruto', 'farid', 'awodkoawkdawo', '2024-11-08', 'comic', 'book3.jpg', 'ajwndawnjawndawjn', 'book_banner_2', 5, 0);
+INSERT INTO `buku` (`id_buku`, `judul`, `pengarang`, `penerbit`, `tahun_terbit`, `kategori`, `cover`, `deskripsi`) VALUES
+(1, 'solo lepeling', 'aaaaaa', 'jeeawdokwaodwka', '2018-11-01', 'komik', 'book1.jpg', 'buku komik mantap banget'),
+(2, 'jujutsu kaisen', 'babun', 'gramded', '2015-11-01', 'komik', 'book2.jpg', 'mantap'),
+(3, 'naruto', 'farid', 'awodkoawkdawo', '2024-11-08', 'comic', 'book3.jpg', 'ajwndawnjawndawjn');
 
 -- --------------------------------------------------------
 
@@ -98,7 +96,10 @@ CREATE TABLE `peminjaman` (
 --
 
 INSERT INTO `peminjaman` (`id`, `tanggal_pinjam`, `tanggal_kembali`, `anggota`, `buku`) VALUES
-(1, '2024-12-01', '2024-12-08', 17, 3);
+(1, '2024-12-01', '2024-12-08', 17, 3),
+(6, '2024-12-03', '2024-12-12', 17, 3),
+(7, '2024-12-03', '2024-12-10', 17, 3),
+(8, '2024-12-03', '2024-12-10', 17, 3);
 
 -- --------------------------------------------------------
 
@@ -121,7 +122,9 @@ CREATE TABLE `pengembalian` (
 INSERT INTO `pengembalian` (`id`, `tanggal_dikembalikan`, `terlambat`, `denda`, `peminjaman_id`) VALUES
 (1, '2024-12-01', NULL, NULL, 1),
 (2, '2024-12-01', NULL, NULL, 2),
-(3, '2024-12-01', NULL, NULL, 3);
+(3, '2024-12-01', NULL, NULL, 3),
+(4, '2024-12-03', 0, 0.00, 1),
+(5, NULL, 0, 0.00, 6);
 
 --
 -- Indexes for dumped tables
@@ -162,7 +165,7 @@ ALTER TABLE `pengembalian`
 -- AUTO_INCREMENT untuk tabel `anggota`
 --
 ALTER TABLE `anggota`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT untuk tabel `buku`
@@ -174,13 +177,13 @@ ALTER TABLE `buku`
 -- AUTO_INCREMENT untuk tabel `peminjaman`
 --
 ALTER TABLE `peminjaman`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT untuk tabel `pengembalian`
 --
 ALTER TABLE `pengembalian`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)
