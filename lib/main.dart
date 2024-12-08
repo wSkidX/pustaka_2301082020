@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'providers/anggota_provider.dart';
+import 'providers/buku_provider.dart';
+import 'providers/peminjaman_provider.dart';
+import 'providers/pengembalian_provider.dart';
 import 'pages/login_page.dart';
 
 void main() {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (ctx) => AnggotaProvider()),
+        ChangeNotifierProvider(create: (_) => AnggotaProvider()),
+        ChangeNotifierProvider(create: (_) => BukuProvider()),
+        ChangeNotifierProvider(create: (_) => PeminjamanProvider()),
+        ChangeNotifierProvider(create: (_) => PengembalianProvider()),
       ],
       child: const MyApp(),
     ),
