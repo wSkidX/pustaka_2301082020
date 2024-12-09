@@ -8,6 +8,7 @@ class Pengembalian {
   final String? tanggalKembali;
   final String? namaAnggota;
   final String? judulBuku;
+  final String? cover;
 
   Pengembalian({
     required this.id,
@@ -19,19 +20,6 @@ class Pengembalian {
     this.tanggalKembali,
     this.namaAnggota,
     this.judulBuku,
+    this.cover,
   });
-
-  static List<Pengembalian> fromJsonList(List<dynamic> jsonList) {
-    return jsonList.map((item) => Pengembalian(
-      id: int.parse(item['id'].toString()),
-      tanggalDikembalikan: item['tanggal_dikembalikan'],
-      terlambat: int.parse(item['terlambat'].toString()),
-      denda: double.parse(item['denda'].toString()),
-      peminjamanId: int.parse(item['peminjaman_id'].toString()),
-      tanggalPinjam: item['tanggal_pinjam'],
-      tanggalKembali: item['tanggal_kembali'],
-      namaAnggota: item['nama_anggota'],
-      judulBuku: item['judul_buku'],
-    )).toList();
-  }
 } 

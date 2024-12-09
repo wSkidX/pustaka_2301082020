@@ -40,21 +40,25 @@ switch($method) {
             $data = json_decode(file_get_contents('php://input'), true);
             
             // Hitung keterlambatan dan denda
-            $stmt = $koneksi->prepare("SELECT tanggal_kembali FROM peminjaman WHERE id = :peminjaman_id");
+            $stmt = $koneksi->prepare("SELECT tanggal_pinjam, tanggal_kembali FROM peminjaman WHERE id = :peminjaman_id");
             $stmt->execute([':peminjaman_id' => $data['peminjaman_id']]);
             $peminjaman = $stmt->fetch(PDO::FETCH_ASSOC);
             
-            $tanggal_kembali = new DateTime($peminjaman['tanggal_kembali']);
+            $tanggal_pinjam = new DateTime($peminjaman['tanggal_pinjam']);
             $tanggal_dikembalikan = new DateTime($data['tanggal_dikembalikan']);
+            $batas_maksimal = clone $tanggal_pinjam;
+            $batas_maksimal->modify('+7 days');
+            
             $terlambat = 0;
             $denda = 0;
             
-            if($tanggal_dikembalikan > $tanggal_kembali) {
-                $selisih = $tanggal_dikembalikan->diff($tanggal_kembali);
+            if($tanggal_dikembalikan > $batas_maksimal) {
+                $selisih = $tanggal_dikembalikan->diff($batas_maksimal);
                 $terlambat = $selisih->days;
-                $denda = $terlambat * 1000; // Denda Rp 1.000 per hari
+                $denda = $terlambat * 1000;
             }
-            
+
+            // Insert ke tabel pengembalian
             $stmt = $koneksi->prepare("
                 INSERT INTO pengembalian 
                 (tanggal_dikembalikan, terlambat, denda, peminjaman_id) 

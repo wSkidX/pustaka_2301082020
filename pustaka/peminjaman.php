@@ -12,10 +12,13 @@ switch($method) {
                 SELECT 
                     p.*, 
                     a.nama as nama_anggota,
-                    b.judul as judul_buku
+                    b.judul as judul_buku,
+                    b.cover as cover
                 FROM peminjaman p
                 JOIN anggota a ON p.anggota = a.id
                 JOIN buku b ON p.buku = b.id_buku
+                LEFT JOIN pengembalian pg ON p.id = pg.peminjaman_id
+                WHERE pg.id IS NULL
             ");
             $stmt->execute();
             $peminjaman = $stmt->fetchAll(PDO::FETCH_ASSOC);

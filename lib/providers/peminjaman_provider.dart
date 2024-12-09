@@ -15,7 +15,16 @@ class PeminjamanProvider with ChangeNotifier {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'success') {
-          _peminjamanList = Peminjaman.fromJsonList(data['data']);
+          _peminjamanList = (data['data'] as List).map((item) => Peminjaman(
+            id: int.parse(item['id'].toString()),
+            tanggalPinjam: item['tanggal_pinjam'],
+            tanggalKembali: item['tanggal_kembali'],
+            anggota: int.parse(item['anggota'].toString()),
+            buku: int.parse(item['buku'].toString()),
+            namaAnggota: item['nama_anggota'],
+            judulBuku: item['judul_buku'],
+            cover: item['cover'],
+          )).toList();
           notifyListeners();
         }
       }
@@ -46,7 +55,6 @@ class PeminjamanProvider with ChangeNotifier {
       }
       return false;
     } catch (error) {
-      print('Error adding peminjaman: $error');
       return false;
     }
   }

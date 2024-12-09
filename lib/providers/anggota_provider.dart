@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import '../models/anggota.dart';
 
 class AnggotaProvider with ChangeNotifier {
-  // Ubah baseUrl untuk emulator Android
   final String _baseUrl = 'http://localhost/pustaka_2301082020/pustaka/anggota.php';
   List<Anggota> _anggotaList = [];
   Anggota? _currentAnggota;
@@ -59,9 +58,6 @@ class AnggotaProvider with ChangeNotifier {
         }),
       );
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] != 'success') {
@@ -71,7 +67,6 @@ class AnggotaProvider with ChangeNotifier {
         throw Exception('Gagal menambahkan anggota: ${response.statusCode}');
       }
     } catch (error) {
-      print('Error in addAnggota: $error');
       rethrow;
     }
   }
@@ -91,12 +86,18 @@ class AnggotaProvider with ChangeNotifier {
           'foto': anggota.foto,
         }),
       );
-
+      
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'success') {
-          await fetchAnggota(); // Refresh data setelah update
+          // Update current anggota juga
+          setCurrentAnggota(anggota);
+          await fetchAnggota();
+        } else {
+          throw Exception(data['message'] ?? 'Gagal memperbarui profil');
         }
+      } else {
+        throw Exception('Gagal memperbarui profil: ${response.statusCode}');
       }
     } catch (error) {
       rethrow;
@@ -111,7 +112,7 @@ class AnggotaProvider with ChangeNotifier {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'success') {
-          await fetchAnggota(); // Refresh data setelah menghapus
+          await fetchAnggota();
         }
       }
     } catch (error) {
@@ -120,7 +121,7 @@ class AnggotaProvider with ChangeNotifier {
   }
 
   // Method untuk set anggota yang login
-  void setCurrentAnggota(Anggota anggota) {
+  void setCurrentAnggota(Anggota? anggota) {
     _currentAnggota = anggota;
     notifyListeners();
   }

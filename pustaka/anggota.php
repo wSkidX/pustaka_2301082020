@@ -11,7 +11,6 @@ $method = $_SERVER['REQUEST_METHOD'];
 if ($method === 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
     
-    // Jika method adalah login
     if (isset($data['method']) && $data['method'] === 'login') {
         if (!isset($data['email']) || !isset($data['password'])) {
             echo json_encode([
@@ -38,8 +37,38 @@ if ($method === 'POST') {
         }
         exit;
     }
+}
+
+if ($method === 'PUT') {
+    $data = json_decode(file_get_contents('php://input'), true);
+    $id = $_GET['id'];
     
-    // Kode untuk register tetap sama
-    // ...
+    try {
+        $stmt = $koneksi->prepare("
+            UPDATE anggota 
+            SET nama = ?, nim = ?, alamat = ?, email = ?, foto = ?
+            WHERE id = ?
+        ");
+        
+        $stmt->execute([
+            $data['nama'],
+            $data['nim'],
+            $data['alamat'],
+            $data['email'],
+            $data['foto'],
+            $id
+        ]);
+
+        echo json_encode([
+            'status' => 'success',
+            'message' => 'Data berhasil diupdate'
+        ]);
+    } catch(PDOException $e) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ]);
+    }
+    exit;
 }
 ?> 

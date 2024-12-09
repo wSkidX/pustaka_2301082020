@@ -31,4 +31,35 @@ class BukuProvider with ChangeNotifier {
       print('Error fetching buku: $error');
     }
   }
-} 
+  Future<void> addBuku(Buku buku) async {
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost/pustaka_2301082020/pustaka/buku.php'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'judul': buku.judul,
+          'pengarang': buku.pengarang,
+          'penerbit': buku.penerbit,
+          'tahun_terbit': buku.tahunTerbit,
+          'kategori': buku.kategori,
+          'cover': buku.cover,
+          'deskripsi': buku.deskripsi,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'success') {
+          await fetchBuku(); // Refresh data setelah menambah
+        } else {
+          throw Exception(data['message'] ?? 'Gagal menambahkan buku');
+        }
+      } else {
+        throw Exception('Gagal menambahkan buku: ${response.statusCode}');
+      }
+    } catch (error) {
+      print('Error in addBuku: $error');
+      rethrow;
+    }
+  }
+}
