@@ -15,18 +15,7 @@ class PengembalianProvider with ChangeNotifier {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'success') {
-          _pengembalianList = (data['data'] as List).map((item) => Pengembalian(
-            id: int.parse(item['id'].toString()),
-            tanggalDikembalikan: item['tanggal_dikembalikan'],
-            terlambat: int.parse(item['terlambat'].toString()),
-            denda: double.parse(item['denda'].toString()),
-            peminjamanId: int.parse(item['peminjaman_id'].toString()),
-            tanggalPinjam: item['tanggal_pinjam'],
-            tanggalKembali: item['tanggal_kembali'],
-            namaAnggota: item['nama_anggota'],
-            judulBuku: item['judul_buku'],
-            cover: item['cover'],
-          )).toList();
+          _pengembalianList = Pengembalian.fromJsonList(data['data']);
           notifyListeners();
         }
       }
@@ -60,6 +49,7 @@ class PengembalianProvider with ChangeNotifier {
       }
       return {'success': false};
     } catch (error) {
+      print('Error adding pengembalian: $error');
       return {'success': false};
     }
   }

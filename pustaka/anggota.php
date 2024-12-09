@@ -11,6 +11,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 if ($method === 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
     
+    // Handle login method
     if (isset($data['method']) && $data['method'] === 'login') {
         if (!isset($data['email']) || !isset($data['password'])) {
             echo json_encode([
@@ -36,7 +37,60 @@ if ($method === 'POST') {
             ]);
         }
         exit;
+    } 
+    // Handle registrasi
+    else {
+        try {
+            // Cek email sudah terdaftar
+            $stmt = $koneksi->prepare("SELECT COUNT(*) FROM anggota WHERE email = ?");
+            $stmt->execute([$data['email']]);
+            $count = $stmt->fetchColumn();
+            
+            if ($count > 0) {
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Email sudah terdaftar'
+                ]);
+                exit;
+            }
+
+            // Hash password
+            $hashedPassword = password_hash($data['password'], PASSWORD_DEFAULT);
+            
+            $stmt = $koneksi->prepare("
+                INSERT INTO anggota (nim, nama, alamat, email, password, tingkat, foto)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ");
+            
+            $result = $stmt->execute([
+                $data['nim'],
+                $data['nama'],
+                $data['alamat'],
+                $data['email'],
+                $hashedPassword,
+                $data['tingkat'],
+                $data['foto']
+            ]);
+
+            if ($result) {
+                echo json_encode([
+                    'status' => 'success',
+                    'message' => 'Registrasi berhasil'
+                ]);
+            } else {
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Gagal menyimpan data'
+                ]);
+            }
+        } catch(PDOException $e) {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Registrasi gagal: ' . $e->getMessage()
+            ]);
+        }
     }
+    exit;
 }
 
 if ($method === 'PUT') {

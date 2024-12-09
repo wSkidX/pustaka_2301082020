@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/anggota_provider.dart';
 import '../pages/editprofile_page.dart';
 import '../pages/tambah_buku.dart';
+import '../pages/login_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -116,7 +117,13 @@ class ProfilePage extends StatelessWidget {
                 ),
                 onPressed: () {
                   anggotaProvider.setCurrentAnggota(null);
-                  Navigator.pushReplacementNamed(context, '/login');
+                  
+                  Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                      builder: (context) => const LoginPage(),
+                    ),
+                    (route) => false,
+                  );
                 },
                 child: const Text('Logout'),
               ),

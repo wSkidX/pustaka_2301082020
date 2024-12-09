@@ -18,4 +18,17 @@ class Peminjaman {
     this.judulBuku,
     this.cover,
   });
+
+  static List<Peminjaman> fromJsonList(List<dynamic> jsonList) {
+    return jsonList.map((item) => Peminjaman(
+      id: int.parse(item['id'].toString()),
+      tanggalPinjam: item['tanggal_pinjam'],
+      tanggalKembali: item['tanggal_kembali'],
+      anggota: int.parse(item['anggota'].toString()),
+      buku: int.parse(item['buku'].toString()),
+      namaAnggota: item['nama_anggota'],
+      judulBuku: item['judul_buku'],
+      cover: item['cover'],
+    )).toList();
+  }
 }

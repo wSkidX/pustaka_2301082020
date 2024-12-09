@@ -11,7 +11,7 @@ import 'pages/profile_page.dart';
 import 'pages/history_page.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -77,7 +77,10 @@ class MyApp extends StatelessWidget {
             fillColor: Colors.white,
           ),
         ),
-        home: const LoginPage(),
+        initialRoute: '/login',
+        routes: {
+          '/login': (context) => const LoginPage(),
+        },
       ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import '../models/anggota.dart';
 
 class AnggotaProvider with ChangeNotifier {
+  // Ubah baseUrl untuk emulator Android
   final String _baseUrl = 'http://localhost/pustaka_2301082020/pustaka/anggota.php';
   List<Anggota> _anggotaList = [];
   Anggota? _currentAnggota;
@@ -46,19 +47,29 @@ class AnggotaProvider with ChangeNotifier {
     try {
       final response = await http.post(
         Uri.parse(_baseUrl),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
         body: json.encode({
           'nim': anggota.nim,
           'nama': anggota.nama,
           'alamat': anggota.alamat,
           'email': anggota.email,
           'password': anggota.password,
-          'tingkat': 2,
-          'foto': ''
+          'tingkat': anggota.tingkat,
+          'foto': anggota.foto
         }),
       );
 
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
       if (response.statusCode == 200) {
+        if (response.body.isEmpty) {
+          throw Exception('Response kosong dari server');
+        }
+        
         final data = json.decode(response.body);
         if (data['status'] != 'success') {
           throw Exception(data['message'] ?? 'Gagal menambahkan anggota');
@@ -67,6 +78,7 @@ class AnggotaProvider with ChangeNotifier {
         throw Exception('Gagal menambahkan anggota: ${response.statusCode}');
       }
     } catch (error) {
+      print('Error in addAnggota: $error');
       rethrow;
     }
   }
@@ -86,7 +98,10 @@ class AnggotaProvider with ChangeNotifier {
           'foto': anggota.foto,
         }),
       );
-      
+
+      print('Response status: ${response.statusCode}');
+      print('Response body: ${response.body}');
+
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'success') {
@@ -100,6 +115,7 @@ class AnggotaProvider with ChangeNotifier {
         throw Exception('Gagal memperbarui profil: ${response.statusCode}');
       }
     } catch (error) {
+      print('Error in updateAnggota: $error');
       rethrow;
     }
   }
@@ -112,7 +128,7 @@ class AnggotaProvider with ChangeNotifier {
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['status'] == 'success') {
-          await fetchAnggota();
+          await fetchAnggota(); // Refresh data setelah menghapus
         }
       }
     } catch (error) {

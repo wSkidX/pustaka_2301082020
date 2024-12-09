@@ -169,7 +169,7 @@ class _LoginPageState extends State<LoginPage> {
       } finally {
         if (mounted) {
           setState(() {
-            _isLoading = true;
+            _isLoading = false;
           });
         }
       }

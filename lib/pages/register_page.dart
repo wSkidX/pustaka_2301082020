@@ -181,7 +181,7 @@ class _RegisterPageState extends State<RegisterPage> {
           email: _emailController.text,
           password: _passwordController.text,
           tingkat: 2,
-          foto: _fotoController.text,
+          foto: _fotoController.text.isEmpty ? '' : _fotoController.text,
         );
 
         await Provider.of<AnggotaProvider>(context, listen: false)
@@ -198,16 +198,20 @@ class _RegisterPageState extends State<RegisterPage> {
 
         Navigator.pop(context);
       } catch (error) {
+        if (!mounted) return;
+        
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Registrasi gagal. Silakan coba lagi.'),
+          SnackBar(
+            content: Text('Registrasi gagal: ${error.toString()}'),
             backgroundColor: Colors.red,
           ),
         );
       } finally {
-        setState(() {
-          _isLoading = false;
-        });
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+        }
       }
     }
   }
