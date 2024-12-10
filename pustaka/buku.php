@@ -41,10 +41,21 @@ switch($method) {
                 ':deskripsi' => $data['deskripsi'] ?? ''
             ]);
 
-            echo json_encode([
-                'status' => 'success',
-                'message' => 'Data buku berhasil ditambahkan'
-            ]);
+            if ($stmt->execute()) {
+                echo json_encode([
+                    'status' => 'success',
+                    'data' => [
+                        'id_buku' => $koneksi->lastInsertId(),
+                        'judul' => $data['judul'],
+                        'pengarang' => $data['pengarang'],
+                        'penerbit' => $data['penerbit'],
+                        'tahun_terbit' => $data['tahun_terbit'],
+                        'kategori' => $data['kategori'],
+                        'cover' => $data['cover'],
+                        'deskripsi' => $data['deskripsi']
+                    ]
+                ]);
+            }
         } catch(PDOException $e) {
             echo json_encode([
                 'status' => 'error',

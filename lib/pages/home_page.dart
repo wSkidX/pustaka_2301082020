@@ -26,7 +26,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      Provider.of<BukuProvider>(context, listen: false).fetchBuku();
+      Provider.of<BukuProvider>(context, listen: false).initialData();
     });
   }
 
@@ -282,16 +282,16 @@ class _HomePageState extends State<HomePage> {
                   height: 320,
                   child: Consumer<BukuProvider>(
                     builder: (context, bukuProvider, child) {
-                      if (bukuProvider.bukuList.isEmpty) {
+                      if (bukuProvider.allBuku.isEmpty) {
                         return const Center(
                           child: CircularProgressIndicator(color: Colors.white),
                         );
                       }
                       return ListView.builder(
                         scrollDirection: Axis.horizontal,
-                        itemCount: bukuProvider.bukuList.length,
+                        itemCount: bukuProvider.allBuku.length,
                         itemBuilder: (context, index) {
-                          final buku = bukuProvider.bukuList[index];
+                          final buku = bukuProvider.allBuku[index];
                           return GestureDetector(
                             onTap: () {
                               Navigator.push(

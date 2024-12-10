@@ -17,16 +17,16 @@ class PeminjamanPage extends StatelessWidget {
       ),
       body: Consumer<PeminjamanProvider>(
         builder: (context, peminjamanProvider, child) {
-          if (peminjamanProvider.peminjamanList.isEmpty) {
-            peminjamanProvider.fetchPeminjaman();
+          if (peminjamanProvider.allPeminjaman.isEmpty) {
+            peminjamanProvider.initialData();
             return const Center(child: CircularProgressIndicator());
           }
 
           return ListView.builder(
             padding: const EdgeInsets.all(16),
-            itemCount: peminjamanProvider.peminjamanList.length,
+            itemCount: peminjamanProvider.allPeminjaman.length,
             itemBuilder: (context, index) {
-              final peminjaman = peminjamanProvider.peminjamanList[index];
+              final peminjaman = peminjamanProvider.allPeminjaman[index];
               return Card(
                 margin: const EdgeInsets.only(bottom: 16),
                 child: Padding(
@@ -114,7 +114,7 @@ class PeminjamanPage extends StatelessWidget {
 
                                     if (result != null && result['success'] && context.mounted) {
                                       // Refresh data peminjaman
-                                      await peminjamanProvider.fetchPeminjaman();
+                                      await peminjamanProvider.initialData();
                                       
                                       if (context.mounted) {
                                         ScaffoldMessenger.of(context).showSnackBar(

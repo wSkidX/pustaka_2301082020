@@ -4,142 +4,134 @@ import 'package:http/http.dart' as http;
 import '../models/anggota.dart';
 
 class AnggotaProvider with ChangeNotifier {
-  // Ubah baseUrl untuk emulator Android
+  final List<Anggota> _allAnggota = [];
   final String _baseUrl = 'http://localhost/pustaka_2301082020/pustaka/anggota.php';
-  List<Anggota> _anggotaList = [];
   Anggota? _currentAnggota;
-
-  List<Anggota> get anggotaList => _anggotaList;
+  
+  List<Anggota> get allAnggota => _allAnggota;
+  int get jumlahAnggota => _allAnggota.length;
   Anggota? get currentAnggota => _currentAnggota;
 
-  // Mengambil semua data anggota
-  Future<void> fetchAnggota() async {
-    try {
-      final response = await http.get(Uri.parse(_baseUrl));
-      
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['status'] == 'success') {
-          final List<Anggota> loadedAnggota = [];
-          for (var anggota in data['data']) {
-            loadedAnggota.add(Anggota(
-              id: anggota['id'],
-              nim: anggota['nim'],
-              nama: anggota['nama'],
-              alamat: anggota['alamat'],
-              email: anggota['email'],
-              password: anggota['password'],
-              tingkat: anggota['tingkat'],
-              foto: anggota['foto'],
-            ));
-          }
-          _anggotaList = loadedAnggota;
-          notifyListeners();
-        }
-      }
-    } catch (error) {
-      rethrow;
-    }
-  }
+  Anggota selectById(int id) =>
+      _allAnggota.firstWhere((element) => element.id == id);
 
-  // Menambah anggota baru
-  Future<void> addAnggota(Anggota anggota) async {
+  Future<void> addAnggota(String nim, String nama, String alamat, 
+      String email, String password) async {
     try {
       final response = await http.post(
         Uri.parse(_baseUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
+        headers: {'Content-Type': 'application/json'},
         body: json.encode({
-          'nim': anggota.nim,
-          'nama': anggota.nama,
-          'alamat': anggota.alamat,
-          'email': anggota.email,
-          'password': anggota.password,
-          'tingkat': anggota.tingkat,
-          'foto': anggota.foto
+          'nim': nim,
+          'nama': nama,
+          'alamat': alamat,
+          'email': email,
+          'password': password,
+          'tingkat': 1,
+          'foto': '',
         }),
       );
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
-
-      if (response.statusCode == 200) {
-        if (response.body.isEmpty) {
-          throw Exception('Response kosong dari server');
-        }
-        
-        final data = json.decode(response.body);
-        if (data['status'] != 'success') {
-          throw Exception(data['message'] ?? 'Gagal menambahkan anggota');
-        }
-      } else {
-        throw Exception('Gagal menambahkan anggota: ${response.statusCode}');
+      final data = json.decode(response.body);
+      if (data['status'] == 'success') {
+        _allAnggota.add(
+          Anggota(
+            id: data['data']['id'],
+            nim: nim,
+            nama: nama,
+            alamat: alamat,
+            email: email,
+            password: password,
+            tingkat: 1,
+            foto: '',
+          ),
+        );
+        notifyListeners();
       }
     } catch (error) {
-      print('Error in addAnggota: $error');
       rethrow;
     }
   }
 
-  // Mengupdate data anggota
-  Future<void> updateAnggota(int id, Anggota anggota) async {
+  Future<bool> editAnggota(int id, String nim, String nama, String alamat, 
+      String email, String foto, BuildContext context) async {
     try {
       final response = await http.put(
         Uri.parse('$_baseUrl?id=$id'),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
-          'nama': anggota.nama,
-          'nim': anggota.nim,
-          'alamat': anggota.alamat,
-          'email': anggota.email,
-          'tingkat': anggota.tingkat,
-          'foto': anggota.foto,
+          'nim': nim,
+          'nama': nama,
+          'alamat': alamat,
+          'email': email,
+          'foto': foto,
         }),
       );
 
-      print('Response status: ${response.statusCode}');
-      print('Response body: ${response.body}');
+      final data = json.decode(response.body);
+      if (data['status'] == 'success') {
+        final anggota = _allAnggota.firstWhere((element) => element.id == id);
+        anggota.nim = nim;
+        anggota.nama = nama;
+        anggota.alamat = alamat;
+        anggota.email = email;
+        anggota.foto = foto;
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['status'] == 'success') {
-          // Update current anggota juga
-          setCurrentAnggota(anggota);
-          await fetchAnggota();
-        } else {
-          throw Exception(data['message'] ?? 'Gagal memperbarui profil');
-        }
-      } else {
-        throw Exception('Gagal memperbarui profil: ${response.statusCode}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Berhasil diubah")),
+        );
+        notifyListeners();
+        return true;
       }
+      return false;
     } catch (error) {
-      print('Error in updateAnggota: $error');
       rethrow;
     }
   }
 
-  // Menghapus data anggota
-  Future<void> deleteAnggota(int id) async {
+  void deleteAnggota(int id, BuildContext context) async {
     try {
       final response = await http.delete(Uri.parse('$_baseUrl?id=$id'));
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['status'] == 'success') {
-          await fetchAnggota(); // Refresh data setelah menghapus
-        }
+      final data = json.decode(response.body);
+      
+      if (data['status'] == 'success') {
+        _allAnggota.removeWhere((element) => element.id == id);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Berhasil dihapus")),
+        );
+        notifyListeners();
       }
     } catch (error) {
       rethrow;
     }
   }
 
-  // Method untuk set anggota yang login
-  void setCurrentAnggota(Anggota? anggota) {
-    _currentAnggota = anggota;
-    notifyListeners();
+  Future<void> initialData() async {
+    try {
+      final response = await http.get(Uri.parse(_baseUrl));
+      final data = json.decode(response.body);
+      
+      if (data['status'] == 'success') {
+        final List<dynamic> anggotaList = data['data'];
+        _allAnggota.clear();
+        
+        for (var anggota in anggotaList) {
+          _allAnggota.add(Anggota(
+            id: anggota['id'],
+            nim: anggota['nim'],
+            nama: anggota['nama'],
+            alamat: anggota['alamat'],
+            email: anggota['email'],
+            password: anggota['password'],
+            tingkat: anggota['tingkat'],
+            foto: anggota['foto'],
+          ));
+        }
+        notifyListeners();
+      }
+    } catch (error) {
+      rethrow;
+    }
   }
 
   Future<void> login(String email, String password) async {
@@ -154,28 +146,29 @@ class AnggotaProvider with ChangeNotifier {
         }),
       );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['status'] == 'success') {
-          final anggota = Anggota(
-            id: int.parse(data['data']['id'].toString()),
-            nim: data['data']['nim'],
-            nama: data['data']['nama'],
-            alamat: data['data']['alamat'],
-            email: data['data']['email'],
-            password: data['data']['password'],
-            tingkat: int.parse(data['data']['tingkat'].toString()),
-            foto: data['data']['foto'],
-          );
-          setCurrentAnggota(anggota);
-        } else {
-          throw Exception(data['message'] ?? 'Login gagal');
-        }
+      final data = json.decode(response.body);
+      if (data['status'] == 'success') {
+        _currentAnggota = Anggota(
+          id: data['data']['id'],
+          nim: data['data']['nim'],
+          nama: data['data']['nama'],
+          alamat: data['data']['alamat'],
+          email: data['data']['email'],
+          password: data['data']['password'],
+          tingkat: data['data']['tingkat'],
+          foto: data['data']['foto'],
+        );
+        notifyListeners();
       } else {
-        throw Exception('Login gagal');
+        throw Exception(data['message']);
       }
     } catch (error) {
       rethrow;
     }
+  }
+
+  void logout() {
+    _currentAnggota = null;
+    notifyListeners();
   }
 }

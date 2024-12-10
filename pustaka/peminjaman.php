@@ -2,6 +2,9 @@
 require_once 'config.php';
 
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE');
+header('Access-Control-Allow-Headers: Content-Type');
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -53,10 +56,19 @@ switch($method) {
                 ':buku' => $data['buku']
             ]);
 
+            $id = $koneksi->lastInsertId();
+            
             echo json_encode([
                 'status' => 'success',
-                'message' => 'Peminjaman berhasil ditambahkan'
+                'data' => [
+                    'id' => $id,
+                    'tanggal_pinjam' => $data['tanggal_pinjam'],
+                    'tanggal_kembali' => $data['tanggal_kembali'],
+                    'anggota' => $data['anggota'],
+                    'buku' => $data['buku']
+                ]
             ]);
+            
         } catch(PDOException $e) {
             echo json_encode([
                 'status' => 'error',

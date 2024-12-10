@@ -113,10 +113,17 @@ if ($method === 'PUT') {
             $id
         ]);
 
-        echo json_encode([
-            'status' => 'success',
-            'message' => 'Data berhasil diupdate'
-        ]);
+        if ($stmt->execute()) {
+            echo json_encode([
+                'status' => 'success',
+                'message' => 'Data berhasil diupdate'
+            ]);
+        } else {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Gagal mengupdate data'
+            ]);
+        }
     } catch(PDOException $e) {
         echo json_encode([
             'status' => 'error',

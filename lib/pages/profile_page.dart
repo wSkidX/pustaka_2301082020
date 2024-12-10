@@ -116,7 +116,7 @@ class ProfilePage extends StatelessWidget {
                   foregroundColor: Colors.white,
                 ),
                 onPressed: () {
-                  anggotaProvider.setCurrentAnggota(null);
+                  anggotaProvider.logout();
                   
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(

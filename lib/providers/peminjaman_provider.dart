@@ -4,31 +4,21 @@ import 'dart:convert';
 import '../models/peminjaman.dart';
 
 class PeminjamanProvider with ChangeNotifier {
-  List<Peminjaman> _peminjamanList = [];
-  List<Peminjaman> get peminjamanList => _peminjamanList;
+  final List<Peminjaman> _allPeminjaman = [];
+  final String _baseUrl = 'http://localhost/pustaka_2301082020/pustaka/peminjaman.php';
+  
+  List<Peminjaman> get allPeminjaman => _allPeminjaman;
+  int get jumlahPeminjaman => _allPeminjaman.length;
 
-  Future<void> fetchPeminjaman() async {
-    try {
-      const baseUrl = 'http://localhost/pustaka_2301082020/pustaka/peminjaman.php';
-      final response = await http.get(Uri.parse(baseUrl));
-      
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['status'] == 'success') {
-          _peminjamanList = Peminjaman.fromJsonList(data['data']);
-          notifyListeners();
-        }
-      }
-    } catch (error) {
-      print('Error fetching peminjaman: $error');
-    }
-  }
+  Peminjaman selectById(int id) =>
+      _allPeminjaman.firstWhere((element) => element.id == id);
 
-  Future<bool> addPeminjaman(String tanggalPinjam, String tanggalKembali, int anggotaId, int bukuId) async {
-    const baseUrl = 'http://localhost/pustaka_2301082020/pustaka/peminjaman.php';
+  Future<bool> addPeminjaman(String tanggalPinjam, String tanggalKembali, 
+      int anggotaId, int bukuId) async {
     try {
       final response = await http.post(
-        Uri.parse(baseUrl),
+        Uri.parse(_baseUrl),
+        headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'tanggal_pinjam': tanggalPinjam,
           'tanggal_kembali': tanggalKembali,
@@ -37,17 +27,103 @@ class PeminjamanProvider with ChangeNotifier {
         }),
       );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['status'] == 'success') {
-          await fetchPeminjaman(); // Refresh data
-          return true;
-        }
+      final data = json.decode(response.body);
+      if (data['status'] == 'success') {
+        _allPeminjaman.add(
+          Peminjaman(
+            id: int.parse(data['data']['id'].toString()),
+            tanggalPinjam: tanggalPinjam,
+            tanggalKembali: tanggalKembali,
+            anggota: anggotaId,
+            buku: bukuId,
+            namaAnggota: data['data']['nama_anggota'],
+            judulBuku: data['data']['judul_buku'],
+            cover: data['data']['cover'],
+          ),
+        );
+        notifyListeners();
+        return true;
       }
       return false;
     } catch (error) {
-      print('Error adding peminjaman: $error');
-      return false;
+      rethrow;
+    }
+  }
+
+  void editPeminjaman(int id, String tanggalPinjam, String tanggalKembali, 
+      int anggotaId, int bukuId, BuildContext context) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$_baseUrl?id=$id'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'tanggal_pinjam': tanggalPinjam,
+          'tanggal_kembali': tanggalKembali,
+          'anggota': anggotaId,
+          'buku': bukuId,
+        }),
+      );
+
+      final data = json.decode(response.body);
+      if (data['status'] == 'success') {
+        final peminjaman = _allPeminjaman.firstWhere((element) => element.id == id);
+        peminjaman.tanggalPinjam = tanggalPinjam;
+        peminjaman.tanggalKembali = tanggalKembali;
+        peminjaman.anggota = anggotaId;
+        peminjaman.buku = bukuId;
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Peminjaman berhasil diubah")),
+        );
+        notifyListeners();
+      }
+    } catch (error) {
+      rethrow;
+    }
+  }
+
+  void deletePeminjaman(int id, BuildContext context) async {
+    try {
+      final response = await http.delete(Uri.parse('$_baseUrl?id=$id'));
+      final data = json.decode(response.body);
+      
+      if (data['status'] == 'success') {
+        _allPeminjaman.removeWhere((element) => element.id == id);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Peminjaman berhasil dihapus")),
+        );
+        notifyListeners();
+      }
+    } catch (error) {
+      rethrow;
+    }
+  }
+
+  Future<void> initialData() async {
+    try {
+      final response = await http.get(Uri.parse(_baseUrl));
+      final data = json.decode(response.body);
+      
+      if (data['status'] == 'success') {
+        final List<dynamic> peminjamanList = data['data'];
+        _allPeminjaman.clear();
+        
+        for (var peminjaman in peminjamanList) {
+          _allPeminjaman.add(Peminjaman(
+            id: int.parse(peminjaman['id'].toString()),
+            tanggalPinjam: peminjaman['tanggal_pinjam'],
+            tanggalKembali: peminjaman['tanggal_kembali'],
+            anggota: int.parse(peminjaman['anggota'].toString()),
+            buku: int.parse(peminjaman['buku'].toString()),
+            namaAnggota: peminjaman['nama_anggota'],
+            judulBuku: peminjaman['judul_buku'],
+            cover: peminjaman['cover'],
+          ));
+        }
+        notifyListeners();
+      }
+    } catch (error) {
+      rethrow;
     }
   }
 } 

@@ -12,22 +12,22 @@ class EditProfilePage extends StatefulWidget {
 
 class _EditProfilePageState extends State<EditProfilePage> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _namaController;
-  late TextEditingController _nimController;
-  late TextEditingController _emailController;
-  late TextEditingController _alamatController;
-  late TextEditingController _fotoController;
+  final TextEditingController _namaController = TextEditingController();
+  final TextEditingController _nimController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _alamatController = TextEditingController();
+  final TextEditingController _fotoController = TextEditingController();
   bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
     final currentAnggota = Provider.of<AnggotaProvider>(context, listen: false).currentAnggota;
-    _namaController = TextEditingController(text: currentAnggota?.nama);
-    _nimController = TextEditingController(text: currentAnggota?.nim);
-    _emailController = TextEditingController(text: currentAnggota?.email);
-    _alamatController = TextEditingController(text: currentAnggota?.alamat);
-    _fotoController = TextEditingController(text: currentAnggota?.foto);
+    _namaController.text = currentAnggota?.nama ?? '';
+    _nimController.text = currentAnggota?.nim ?? '';
+    _emailController.text = currentAnggota?.email ?? '';
+    _alamatController.text = currentAnggota?.alamat ?? '';
+    _fotoController.text = currentAnggota?.foto ?? '';
   }
 
   @override
@@ -162,12 +162,17 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 foto: _fotoController.text,
                               );
 
-                              await anggotaProvider.updateAnggota(
+                              final success = await anggotaProvider.editAnggota(
                                 currentAnggota.id,
-                                updatedAnggota,
+                                updatedAnggota.nim,
+                                updatedAnggota.nama,
+                                updatedAnggota.alamat,
+                                updatedAnggota.email,
+                                updatedAnggota.foto,
+                                context,
                               );
 
-                              if (context.mounted) {
+                              if (success && context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
                                     content: Text('Profil berhasil diperbarui'),

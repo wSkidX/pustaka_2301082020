@@ -188,7 +188,15 @@ class _TambahBukuPageState extends State<TambahBukuPage> {
           deskripsi: '',
         );
 
-        await bukuProvider.addBuku(buku);
+        await bukuProvider.addBuku(
+          buku.judul, 
+          buku.pengarang, 
+          buku.penerbit, 
+          buku.tahunTerbit, 
+          buku.kategori, 
+          buku.cover,
+          buku.deskripsi,
+        );
 
         if (!mounted) return;
         

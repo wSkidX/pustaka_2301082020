@@ -185,7 +185,7 @@ class _RegisterPageState extends State<RegisterPage> {
         );
 
         await Provider.of<AnggotaProvider>(context, listen: false)
-            .addAnggota(anggota);
+            .addAnggota(anggota.nim, anggota.nama, anggota.alamat, anggota.email, anggota.foto);
 
         if (!mounted) return;
 
