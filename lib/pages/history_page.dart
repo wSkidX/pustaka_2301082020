@@ -14,9 +14,11 @@ class _HistoryPageState extends State<HistoryPage> {
   void initState() {
     super.initState();
     // Fetch data saat halaman dibuka
-    Future.microtask(() {
-      Provider.of<PengembalianProvider>(context, listen: false).fetchPengembalian();
-    });
+    if (mounted) {
+      Future.microtask(() {
+        Provider.of<PengembalianProvider>(context, listen: false).initialData();
+      });
+    }
   }
 
   @override
@@ -30,7 +32,7 @@ class _HistoryPageState extends State<HistoryPage> {
       ),
       body: Consumer<PengembalianProvider>(
         builder: (context, pengembalianProvider, child) {
-          final pengembalianList = pengembalianProvider.pengembalianList;
+          final pengembalianList = pengembalianProvider.allPengembalian;
 
           if (pengembalianList.isEmpty) {
             return const Center(
