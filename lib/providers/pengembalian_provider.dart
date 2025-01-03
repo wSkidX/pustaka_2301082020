@@ -4,46 +4,31 @@ import 'dart:convert';
 import '../models/pengembalian.dart';
 
 class PengembalianProvider with ChangeNotifier {
-  final List<Pengembalian> _allPengembalian = [];
-  final String _baseUrl = 'http://localhost/pustaka_2301082020/pustaka/pengembalian.php';
-  
-  List<Pengembalian> get allPengembalian => _allPengembalian;
-  int get jumlahPengembalian => _allPengembalian.length;
+  List<Pengembalian> _pengembalianList = [];
+  List<Pengembalian> get pengembalianList => _pengembalianList;
 
-  Future<void> initialData() async {
+  Future<void> fetchPengembalian() async {
     try {
-      final response = await http.get(Uri.parse(_baseUrl));
-      final data = json.decode(response.body);
+      const baseUrl = 'http://localhost/pustaka_2301082020/pustaka/pengembalian.php';
+      final response = await http.get(Uri.parse(baseUrl));
       
-      if (data['status'] == 'success') {
-        final List<dynamic> pengembalianList = data['data'];
-        _allPengembalian.clear();
-        
-        for (var pengembalian in pengembalianList) {
-          _allPengembalian.add(Pengembalian(
-            id: int.parse(pengembalian['id'].toString()),
-            tanggalDikembalikan: pengembalian['tanggal_dikembalikan'],
-            terlambat: int.parse(pengembalian['terlambat'].toString()),
-            denda: double.parse(pengembalian['denda'].toString()),
-            peminjamanId: int.parse(pengembalian['peminjaman_id'].toString()),
-            tanggalPinjam: pengembalian['tanggal_pinjam'],
-            tanggalKembali: pengembalian['tanggal_kembali'],
-            namaAnggota: pengembalian['nama_anggota'],
-            judulBuku: pengembalian['judul_buku'],
-            cover: pengembalian['cover'],
-          ));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'success') {
+          _pengembalianList = Pengembalian.fromJsonList(data['data']);
+          notifyListeners();
         }
-        notifyListeners();
       }
     } catch (error) {
-      rethrow;
+      print('Error fetching pengembalian: $error');
     }
   }
 
-  Future<Map<String, dynamic>> addPengembalian(String tanggalDikembalikan, int peminjamanId) async {
+  Future<Map<String, dynamic>?> addPengembalian(String tanggalDikembalikan, int peminjamanId) async {
+    const baseUrl = 'http://localhost/pustaka_2301082020/pustaka/pengembalian.php';
     try {
       final response = await http.post(
-        Uri.parse(_baseUrl),
+        Uri.parse(baseUrl),
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
           'tanggal_dikembalikan': tanggalDikembalikan,
@@ -51,14 +36,16 @@ class PengembalianProvider with ChangeNotifier {
         }),
       );
 
-      final data = json.decode(response.body);
-      if (data['status'] == 'success') {
-        await initialData(); // Refresh data
-        return {
-          'success': true,
-          'terlambat': int.parse(data['data']['terlambat'].toString()),
-          'denda': double.parse(data['data']['denda'].toString()),
-        };
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status'] == 'success') {
+          await fetchPengembalian(); // Refresh data
+          return {
+            'success': true,
+            'terlambat': data['data']['terlambat'],
+            'denda': data['data']['denda'],
+          };
+        }
       }
       return {'success': false};
     } catch (error) {
