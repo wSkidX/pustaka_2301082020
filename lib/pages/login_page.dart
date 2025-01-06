@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/anggota_provider.dart';
 import 'register_page.dart';
 import '../main.dart';
+import 'package:flutter/cupertino.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -37,10 +38,15 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Logo atau Icon
-                const Icon(
-                  Icons.library_books,
-                  size: 100,
-                  color: Colors.white,
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage('assets/logo.png'),
+                      fit: BoxFit.contain,
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 24),
                 const Text(
@@ -52,7 +58,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
                 const SizedBox(height: 48),
-                
+
                 // Form Login
                 Card(
                   child: Padding(
@@ -63,7 +69,7 @@ class _LoginPageState extends State<LoginPage> {
                           controller: _emailController,
                           decoration: const InputDecoration(
                             labelText: 'Email',
-                            prefixIcon: Icon(Icons.email),
+                            prefixIcon: Icon(CupertinoIcons.mail),
                           ),
                           keyboardType: TextInputType.emailAddress,
                           validator: (value) {
@@ -78,16 +84,15 @@ class _LoginPageState extends State<LoginPage> {
                           controller: _passwordController,
                           decoration: InputDecoration(
                             labelText: 'Password',
-                            prefixIcon: const Icon(Icons.lock),
+                            prefixIcon: const Icon(CupertinoIcons.lock),
                             suffixIcon: IconButton(
                               icon: Icon(
-                                _obscureText ? Icons.visibility_off : Icons.visibility,
+                                _obscureText
+                                    ? CupertinoIcons.eye_slash
+                                    : CupertinoIcons.eye,
                               ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscureText = !_obscureText;
-                                });
-                              },
+                              onPressed: () =>
+                                  setState(() => _obscureText = !_obscureText),
                             ),
                           ),
                           obscureText: _obscureText,
@@ -126,7 +131,8 @@ class _LoginPageState extends State<LoginPage> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const RegisterPage()),
+                      MaterialPageRoute(
+                          builder: (context) => const RegisterPage()),
                     );
                   },
                   child: const Text(

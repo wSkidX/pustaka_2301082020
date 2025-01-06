@@ -30,15 +30,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _fotoController.text = currentAnggota?.foto ?? '';
   }
 
-  @override
-  void dispose() {
-    _namaController.dispose();
-    _nimController.dispose();
-    _emailController.dispose();
-    _alamatController.dispose();
-    _fotoController.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {

@@ -1,12 +1,12 @@
 class Buku {
-   int idBuku;
-   String judul;
-   String pengarang;
-   String penerbit;
-   String tahunTerbit;
-   String kategori;
-   String cover;
-   String deskripsi;
+  int idBuku;
+  String judul;
+  String pengarang;
+  String penerbit;
+  String tahunTerbit;
+  String kategori;
+  String cover;
+  String deskripsi;
 
   Buku({
     required this.idBuku,
@@ -18,5 +18,4 @@ class Buku {
     required this.cover,
     required this.deskripsi,
   });
-
-} 
+}

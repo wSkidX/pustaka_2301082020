@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/anggota_provider.dart';
 import '../models/anggota.dart';
+import 'package:flutter/cupertino.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -40,7 +41,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   decoration: const InputDecoration(
                     labelText: 'NIM',
                     border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.numbers),
+                    prefixIcon: Icon(CupertinoIcons.number),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -55,7 +56,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   decoration: const InputDecoration(
                     labelText: 'Nama Lengkap',
                     border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.person),
+                    prefixIcon: Icon(CupertinoIcons.person),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -70,7 +71,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   decoration: const InputDecoration(
                     labelText: 'Alamat',
                     border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.home),
+                    prefixIcon: Icon(CupertinoIcons.location),
                   ),
                   maxLines: 2,
                   validator: (value) {
@@ -86,7 +87,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   decoration: const InputDecoration(
                     labelText: 'Email',
                     border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.email),
+                    prefixIcon: Icon(CupertinoIcons.mail),
                   ),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
@@ -105,16 +106,15 @@ class _RegisterPageState extends State<RegisterPage> {
                   decoration: InputDecoration(
                     labelText: 'Password',
                     border: const OutlineInputBorder(),
-                    prefixIcon: const Icon(Icons.lock),
+                    prefixIcon: const Icon(CupertinoIcons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscureText ? Icons.visibility : Icons.visibility_off,
+                        _obscureText
+                            ? CupertinoIcons.eye_slash
+                            : CupertinoIcons.eye,
                       ),
-                      onPressed: () {
-                        setState(() {
-                          _obscureText = !_obscureText;
-                        });
-                      },
+                      onPressed: () =>
+                          setState(() => _obscureText = !_obscureText),
                     ),
                   ),
                   obscureText: _obscureText,
@@ -134,7 +134,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   decoration: const InputDecoration(
                     labelText: 'URL Foto',
                     border: OutlineInputBorder(),
-                    prefixIcon: Icon(Icons.image),
+                    prefixIcon: Icon(CupertinoIcons.photo),
                     hintText: 'Masukkan URL foto',
                   ),
                 ),
@@ -184,8 +184,12 @@ class _RegisterPageState extends State<RegisterPage> {
           foto: _fotoController.text.isEmpty ? '' : _fotoController.text,
         );
 
-        await Provider.of<AnggotaProvider>(context, listen: false)
-            .addAnggota(anggota.nim, anggota.nama, anggota.alamat, anggota.email, anggota.foto);
+        await Provider.of<AnggotaProvider>(context, listen: false).addAnggota(
+            anggota.nim,
+            anggota.nama,
+            anggota.alamat,
+            anggota.email,
+            anggota.password);
 
         if (!mounted) return;
 
@@ -199,7 +203,7 @@ class _RegisterPageState extends State<RegisterPage> {
         Navigator.pop(context);
       } catch (error) {
         if (!mounted) return;
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Registrasi gagal: ${error.toString()}'),

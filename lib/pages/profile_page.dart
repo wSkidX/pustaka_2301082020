@@ -4,6 +4,7 @@ import '../providers/anggota_provider.dart';
 import '../pages/editprofile_page.dart';
 import '../pages/tambah_buku.dart';
 import '../pages/login_page.dart';
+import 'package:flutter/cupertino.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -33,12 +34,16 @@ class ProfilePage extends StatelessWidget {
             Center(
               child: CircleAvatar(
                 radius: 60,
-                backgroundImage: NetworkImage(currentAnggota.foto),
-                onBackgroundImageError: (_, __) => const Icon(Icons.person),
+                backgroundColor: Colors.white,
+                child: Icon(
+                  CupertinoIcons.person_circle_fill,
+                  size: 100,
+                  color: Color(0xFF0C356A),
+                ),
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Informasi Profil
             Card(
               child: Padding(
@@ -70,22 +75,30 @@ class ProfilePage extends StatelessWidget {
                       ],
                     ),
                     const Divider(),
-                    _buildProfileItem('Nama', currentAnggota.nama),
-                    const Divider(),
-                    _buildProfileItem('NIM', currentAnggota.nim),
-                    const Divider(),
-                    _buildProfileItem('Email', currentAnggota.email),
-                    const Divider(),
-                    _buildProfileItem('Alamat', currentAnggota.alamat),
-                    const Divider(),
-                    _buildProfileItem('Status', 
-                      currentAnggota.tingkat == 1 ? 'Admin' : 'Anggota'
+                    ListTile(
+                      leading: const Icon(CupertinoIcons.number),
+                      title: Text(currentAnggota.nim),
                     ),
+                    ListTile(
+                      leading: const Icon(CupertinoIcons.person),
+                      title: Text(currentAnggota.nama),
+                    ),
+                    ListTile(
+                      leading: const Icon(CupertinoIcons.location),
+                      title: Text(currentAnggota.alamat),
+                    ),
+                    ListTile(
+                      leading: const Icon(CupertinoIcons.mail),
+                      title: Text(currentAnggota.email),
+                    ),
+                    const Divider(),
+                    _buildProfileItem('Status',
+                        currentAnggota.tingkat == 1 ? 'Admin' : 'Anggota'),
                   ],
                 ),
               ),
             ),
-            
+
             // Tambahkan tombol Tambah Buku jika user adalah admin
             if (currentAnggota.tingkat == 1) ...[
               const SizedBox(height: 16),
@@ -106,7 +119,7 @@ class ProfilePage extends StatelessWidget {
             ],
 
             const SizedBox(height: 24),
-            
+
             // Tombol Logout
             SizedBox(
               width: double.infinity,
@@ -117,7 +130,7 @@ class ProfilePage extends StatelessWidget {
                 ),
                 onPressed: () {
                   anggotaProvider.logout();
-                  
+
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(
                       builder: (context) => const LoginPage(),

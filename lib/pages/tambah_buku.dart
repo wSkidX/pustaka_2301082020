@@ -189,17 +189,17 @@ class _TambahBukuPageState extends State<TambahBukuPage> {
         );
 
         await bukuProvider.addBuku(
-          buku.judul, 
-          buku.pengarang, 
-          buku.penerbit, 
-          buku.tahunTerbit, 
-          buku.kategori, 
+          buku.judul,
+          buku.pengarang,
+          buku.penerbit,
+          buku.tahunTerbit,
+          buku.kategori,
           buku.cover,
           buku.deskripsi,
         );
 
         if (!mounted) return;
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Buku berhasil ditambahkan'),

@@ -21,19 +21,26 @@ if ($method === 'POST') {
             exit;
         }
 
-        $stmt = $koneksi->prepare("SELECT * FROM anggota WHERE email = ?");
-        $stmt->execute([$data['email']]);
-        $anggota = $stmt->fetch(PDO::FETCH_ASSOC);
+        try {
+            $stmt = $koneksi->prepare("SELECT id, nim, nama, alamat, email, password, tingkat, foto FROM anggota WHERE email = ?");
+            $stmt->execute([$data['email']]);
+            $anggota = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($anggota && password_verify($data['password'], $anggota['password'])) {
-            echo json_encode([
-                'status' => 'success',
-                'data' => $anggota
-            ]);
-        } else {
+            if ($anggota && password_verify($data['password'], $anggota['password'])) {
+                echo json_encode([
+                    'status' => 'success',
+                    'data' => $anggota
+                ]);
+            } else {
+                echo json_encode([
+                    'status' => 'error',
+                    'message' => 'Email atau password salah'
+                ]);
+            }
+        } catch(PDOException $e) {
             echo json_encode([
                 'status' => 'error',
-                'message' => 'Email atau password salah'
+                'message' => 'Login gagal: ' . $e->getMessage()
             ]);
         }
         exit;
