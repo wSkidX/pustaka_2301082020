@@ -1,176 +1,201 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../providers/peminjaman_provider.dart';
 import '../providers/pengembalian_provider.dart';
-import 'package:flutter/cupertino.dart';
+import '../providers/anggota_provider.dart';
+import '../models/peminjaman.dart';
 
-class PeminjamanPage extends StatelessWidget {
+class PeminjamanPage extends StatefulWidget {
   const PeminjamanPage({super.key});
 
   @override
+  State<PeminjamanPage> createState() => _PeminjamanPageState();
+}
+
+class _PeminjamanPageState extends State<PeminjamanPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Inisialisasi data peminjaman
+    Future.microtask(() =>
+        Provider.of<PeminjamanProvider>(context, listen: false).initialData());
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final peminjamanProvider = Provider.of<PeminjamanProvider>(context);
+    final anggotaProvider = Provider.of<AnggotaProvider>(context);
+    final currentAnggota = anggotaProvider.currentAnggota;
+
+    if (currentAnggota == null) {
+      return const Center(child: Text('Silakan login terlebih dahulu'));
+    }
+
+    // Filter peminjaman yang masih aktif (status = 'Dipinjam')
+    final peminjaman = peminjamanProvider
+        .getPeminjamanByAnggota(currentAnggota.id)
+        .where((pinjam) => pinjam.status == 'Dipinjam')
+        .toList();
+
     return Scaffold(
       backgroundColor: const Color(0xFF0C356A),
       appBar: AppBar(
-        title: const Text('Daftar Peminjaman'),
+        title: const Text('Peminjaman Saya'),
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: Consumer<PeminjamanProvider>(
-        builder: (context, peminjamanProvider, child) {
-          if (peminjamanProvider.allPeminjaman.isEmpty) {
-            peminjamanProvider.initialData();
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: peminjamanProvider.allPeminjaman.length,
-            itemBuilder: (context, index) {
-              final peminjaman = peminjamanProvider.allPeminjaman[index];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 16),
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Cover Image
-                      Container(
-                        width: 100,
-                        height: 150,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          image: DecorationImage(
-                            image: NetworkImage(peminjaman.cover ?? ''),
-                            fit: BoxFit.cover,
-                            onError: (_, __) => const Icon(Icons.error),
+      body: ListView.builder(
+        padding: const EdgeInsets.all(16),
+        itemCount: peminjaman.length,
+        itemBuilder: (context, index) {
+          final pinjam = peminjaman[index];
+          return Card(
+            margin: const EdgeInsets.only(bottom: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    pinjam.judulBuku ?? 'Judul tidak tersedia',
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text('Tanggal Pinjam: ${pinjam.tanggalPinjam}'),
+                  Text('Lama Pinjam: ${pinjam.hariPinjam} hari'),
+                  Text('Status: ${pinjam.status}'),
+                  if (pinjam.status == 'Dipinjam') ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      margin: const EdgeInsets.only(top: 8),
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: () => _showKembalikanDialog(context, pinjam),
+                        child: const Text(
+                          'Kembalikan Buku',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
                           ),
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      // Book Details
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              peminjaman.judulBuku ?? 'Judul tidak tersedia',
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Peminjam: ${peminjaman.namaAnggota}',
-                              style: const TextStyle(color: Colors.black87),
-                            ),
-                            Text(
-                              'Tanggal Pinjam: ${peminjaman.tanggalPinjam}',
-                              style: const TextStyle(color: Colors.black87),
-                            ),
-                            Text(
-                              'Tanggal Kembali: ${peminjaman.tanggalKembali}',
-                              style: const TextStyle(color: Colors.black87),
-                            ),
-                            const SizedBox(height: 16),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF0C356A),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 12),
-                              ),
-                              onPressed: () async {
-                                // Tampilkan dialog konfirmasi
-                                final confirm = await showDialog<bool>(
-                                  context: context,
-                                  builder: (context) => AlertDialog(
-                                    title:
-                                        const Text('Konfirmasi Pengembalian'),
-                                    content: const Text(
-                                        'Apakah Anda yakin ingin mengembalikan buku ini?'),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(context, false),
-                                        child: const Text('Batal'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () =>
-                                            Navigator.pop(context, true),
-                                        child: const Text('Ya'),
-                                      ),
-                                    ],
-                                  ),
-                                );
-
-                                if (confirm == true && context.mounted) {
-                                  try {
-                                    final pengembalianProvider =
-                                        Provider.of<PengembalianProvider>(
-                                            context,
-                                            listen: false);
-
-                                    final result = await pengembalianProvider
-                                        .addPengembalian(
-                                      DateTime.now()
-                                          .toIso8601String()
-                                          .split('T')[0],
-                                      peminjaman.id,
-                                    );
-
-                                    if (result != null &&
-                                        result['success'] &&
-                                        context.mounted) {
-                                      // Refresh data peminjaman
-                                      await peminjamanProvider.initialData();
-
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(context)
-                                            .showSnackBar(
-                                          SnackBar(
-                                            content: Text(
-                                                'Buku berhasil dikembalikan. ${result['terlambat'] > 0 ? 'Terlambat ${result['terlambat']} hari. Denda: Rp${result['denda']}' : 'Tepat waktu.'}'),
-                                            backgroundColor:
-                                                result['terlambat'] > 0
-                                                    ? Colors.red
-                                                    : Colors.green,
-                                          ),
-                                        );
-                                      }
-                                    }
-                                  } catch (e) {
-                                    if (context.mounted) {
-                                      ScaffoldMessenger.of(context)
-                                          .showSnackBar(
-                                        const SnackBar(
-                                          content: Text(
-                                              'Terjadi kesalahan saat mengembalikan buku'),
-                                          backgroundColor: Colors.red,
-                                        ),
-                                      );
-                                    }
-                                  }
-                                }
-                              },
-                              child: const Text(
-                                'Kembalikan Buku',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
+                    ),
+                  ],
+                ],
+              ),
+            ),
           );
         },
       ),
     );
+  }
+
+  Future<void> _showKembalikanDialog(
+      BuildContext context, Peminjaman pinjam) async {
+    DateTime selectedDate = DateTime.now();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: const Text('Kembalikan Buku'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Pilih tanggal pengembalian:'),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: () async {
+                  if (selectedDate
+                      .isBefore(DateTime.parse(pinjam.tanggalPinjam))) {
+                    selectedDate = DateTime.parse(pinjam.tanggalPinjam);
+                  }
+
+                  final picked = await showDatePicker(
+                    context: context,
+                    initialDate: selectedDate,
+                    firstDate: DateTime.parse(pinjam.tanggalPinjam),
+                    lastDate: DateTime.parse(pinjam.tanggalPinjam)
+                        .add(const Duration(days: 30)),
+                  );
+                  if (picked != null) {
+                    setState(() => selectedDate = picked);
+                  }
+                },
+                child: Text(DateFormat('dd MMMM yyyy').format(selectedDate)),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Keterlambatan: ${pinjam.hitungKeterlambatan(DateFormat('yyyy-MM-dd').format(selectedDate))} hari',
+              ),
+              Text(
+                'Denda: Rp ${pinjam.hitungDenda(DateFormat('yyyy-MM-dd').format(selectedDate))}',
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Batal'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Konfirmasi'),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (result == true) {
+      if (!context.mounted) return;
+
+      try {
+        final response =
+            await Provider.of<PengembalianProvider>(context, listen: false)
+                .prosesPengembalian(
+          pinjam.id,
+          DateFormat('yyyy-MM-dd').format(selectedDate),
+        );
+
+        if (!context.mounted) return;
+
+        if (response['success']) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Buku berhasil dikembalikan. Denda: Rp ${response['denda']}',
+              ),
+            ),
+          );
+          // Refresh data peminjaman
+          Provider.of<PeminjamanProvider>(context, listen: false).initialData();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: ${response['message']}')),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
   }
 }

@@ -22,7 +22,8 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   void initState() {
     super.initState();
-    final currentAnggota = Provider.of<AnggotaProvider>(context, listen: false).currentAnggota;
+    final currentAnggota =
+        Provider.of<AnggotaProvider>(context, listen: false).currentAnggota;
     _namaController.text = currentAnggota?.nama ?? '';
     _nimController.text = currentAnggota?.nim ?? '';
     _emailController.text = currentAnggota?.email ?? '';
@@ -30,6 +31,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _fotoController.text = currentAnggota?.foto ?? '';
   }
 
+  @override
+  void dispose() {
+    _namaController.dispose();
+    _nimController.dispose();
+    _emailController.dispose();
+    _alamatController.dispose();
+    _fotoController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -153,36 +163,36 @@ class _EditProfilePageState extends State<EditProfilePage> {
                                 foto: _fotoController.text,
                               );
 
-                              final success = await anggotaProvider.editAnggota(
+                              await anggotaProvider.updateProfile(
                                 currentAnggota.id,
-                                updatedAnggota.nim,
                                 updatedAnggota.nama,
+                                updatedAnggota.nim,
                                 updatedAnggota.alamat,
                                 updatedAnggota.email,
                                 updatedAnggota.foto,
-                                context,
                               );
 
-                              if (success && context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Profil berhasil diperbarui'),
-                                    backgroundColor: Colors.green,
-                                  ),
-                                );
-                                Navigator.pop(context);
-                              }
+                              if (!mounted) return;
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Profil berhasil diperbarui'),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                              Navigator.pop(context);
                             } catch (e) {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Gagal memperbarui profil'),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
-                              }
+                              if (!mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Gagal memperbarui profil'),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
                             } finally {
-                              setState(() => _isLoading = false);
+                              if (mounted) {
+                                setState(() => _isLoading = false);
+                              }
                             }
                           }
                         },

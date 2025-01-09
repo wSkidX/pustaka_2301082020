@@ -12,6 +12,7 @@ dependencies:
   provider: ^6.1.2
   http: ^1.2.2
   cupertino_icons: ^1.0.8
+  intl: ^0.20.1
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -22,4 +23,7 @@ flutter:
 
   
   assets:
-    - assets/images/banner/
+  - assets/
+  - assets/images/
+  - assets/images/banner/
+    

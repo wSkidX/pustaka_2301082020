@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/anggota_provider.dart';
+import '../models/login.dart';
 import 'register_page.dart';
-import '../main.dart';
-import 'package:flutter/cupertino.dart';
+import '../main_screen.dart';
+import '../themes/app_theme.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -29,6 +30,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.primaryColor,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
@@ -38,15 +40,10 @@ class _LoginPageState extends State<LoginPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Logo atau Icon
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: AssetImage('assets/logo.png'),
-                      fit: BoxFit.contain,
-                    ),
-                  ),
+                const Icon(
+                  Icons.library_books,
+                  size: 100,
+                  color: Colors.white,
                 ),
                 const SizedBox(height: 24),
                 const Text(
@@ -69,7 +66,7 @@ class _LoginPageState extends State<LoginPage> {
                           controller: _emailController,
                           decoration: const InputDecoration(
                             labelText: 'Email',
-                            prefixIcon: Icon(CupertinoIcons.mail),
+                            prefixIcon: Icon(Icons.email),
                           ),
                           keyboardType: TextInputType.emailAddress,
                           validator: (value) {
@@ -84,15 +81,18 @@ class _LoginPageState extends State<LoginPage> {
                           controller: _passwordController,
                           decoration: InputDecoration(
                             labelText: 'Password',
-                            prefixIcon: const Icon(CupertinoIcons.lock),
+                            prefixIcon: const Icon(Icons.lock),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscureText
-                                    ? CupertinoIcons.eye_slash
-                                    : CupertinoIcons.eye,
+                                    ? Icons.visibility_off
+                                    : Icons.visibility,
                               ),
-                              onPressed: () =>
-                                  setState(() => _obscureText = !_obscureText),
+                              onPressed: () {
+                                setState(() {
+                                  _obscureText = !_obscureText;
+                                });
+                              },
                             ),
                           ),
                           obscureText: _obscureText,
@@ -155,8 +155,10 @@ class _LoginPageState extends State<LoginPage> {
       });
 
       try {
-        await Provider.of<AnggotaProvider>(context, listen: false)
-            .login(_emailController.text, _passwordController.text);
+        await Provider.of<AnggotaProvider>(context, listen: false).login(
+            LoginModel(
+                email: _emailController.text,
+                password: _passwordController.text));
 
         if (!mounted) return;
 

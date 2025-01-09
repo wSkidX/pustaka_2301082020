@@ -8,8 +8,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 switch($method) {
     case 'GET':
         try {
-            $stmt = $koneksi->prepare("SELECT * FROM buku");
-            $stmt->execute();
+            $stmt = $koneksi->query("SELECT * FROM buku ORDER BY id_buku DESC");
             $buku = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             echo json_encode([
@@ -28,34 +27,25 @@ switch($method) {
         try {
             $data = json_decode(file_get_contents('php://input'), true);
             
-            $stmt = $koneksi->prepare("INSERT INTO buku (judul, pengarang, penerbit, tahun_terbit, kategori, cover, deskripsi) 
-                                     VALUES (:judul, :pengarang, :penerbit, :tahun_terbit, :kategori, :cover, :deskripsi)");
+            $stmt = $koneksi->prepare("
+                INSERT INTO buku (judul, pengarang, penerbit, tahun_terbit, kategori, cover, deskripsi, status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 'Tersedia')
+            ");
             
             $stmt->execute([
-                ':judul' => $data['judul'],
-                ':pengarang' => $data['pengarang'],
-                ':penerbit' => $data['penerbit'],
-                ':tahun_terbit' => $data['tahun_terbit'],
-                ':kategori' => $data['kategori'],
-                ':cover' => $data['cover'] ?? '',
-                ':deskripsi' => $data['deskripsi'] ?? ''
+                $data['judul'],
+                $data['pengarang'],
+                $data['penerbit'],
+                $data['tahun_terbit'],
+                $data['kategori'],
+                $data['cover'],
+                $data['deskripsi']
             ]);
 
-            if ($stmt->execute()) {
-                echo json_encode([
-                    'status' => 'success',
-                    'data' => [
-                        'id_buku' => $koneksi->lastInsertId(),
-                        'judul' => $data['judul'],
-                        'pengarang' => $data['pengarang'],
-                        'penerbit' => $data['penerbit'],
-                        'tahun_terbit' => $data['tahun_terbit'],
-                        'kategori' => $data['kategori'],
-                        'cover' => $data['cover'],
-                        'deskripsi' => $data['deskripsi']
-                    ]
-                ]);
-            }
+            echo json_encode([
+                'status' => 'success',
+                'message' => 'Buku berhasil ditambahkan'
+            ]);
         } catch(PDOException $e) {
             echo json_encode([
                 'status' => 'error',
@@ -66,39 +56,33 @@ switch($method) {
 
     case 'PUT':
         try {
+            $id = $_GET['id'];
             $data = json_decode(file_get_contents('php://input'), true);
-            $id = $_GET['id'] ?? null;
             
-            if (!$id) {
-                throw new Exception('ID tidak ditemukan');
-            }
-            
-            $stmt = $koneksi->prepare("UPDATE buku SET 
-                                     judul = :judul,
-                                     pengarang = :pengarang,
-                                     penerbit = :penerbit,
-                                     tahun_terbit = :tahun_terbit,
-                                     kategori = :kategori,
-                                     cover = :cover,
-                                     deskripsi = :deskripsi
-                                     WHERE id_buku = :id");
+            $stmt = $koneksi->prepare("
+                UPDATE buku 
+                SET judul = ?, pengarang = ?, penerbit = ?, 
+                    tahun_terbit = ?, kategori = ?, cover = ?, 
+                    deskripsi = ?
+                WHERE id_buku = ?
+            ");
             
             $stmt->execute([
-                ':id' => $id,
-                ':judul' => $data['judul'],
-                ':pengarang' => $data['pengarang'],
-                ':penerbit' => $data['penerbit'],
-                ':tahun_terbit' => $data['tahun_terbit'],
-                ':kategori' => $data['kategori'],
-                ':cover' => $data['cover'] ?? '',
-                ':deskripsi' => $data['deskripsi'] ?? ''
+                $data['judul'],
+                $data['pengarang'],
+                $data['penerbit'],
+                $data['tahun_terbit'],
+                $data['kategori'],
+                $data['cover'],
+                $data['deskripsi'],
+                $id
             ]);
-            
+
             echo json_encode([
                 'status' => 'success',
-                'message' => 'Data buku berhasil diupdate'
+                'message' => 'Buku berhasil diupdate'
             ]);
-        } catch(Exception $e) {
+        } catch(PDOException $e) {
             echo json_encode([
                 'status' => 'error',
                 'message' => $e->getMessage()
@@ -108,32 +92,20 @@ switch($method) {
 
     case 'DELETE':
         try {
-            $id = $_GET['id'] ?? null;
-            
-            if (!$id) {
-                throw new Exception('ID tidak ditemukan');
-            }
-            
-            $stmt = $koneksi->prepare("DELETE FROM buku WHERE id_buku = :id");
-            $stmt->execute([':id' => $id]);
-            
+            $id = $_GET['id'];
+            $stmt = $koneksi->prepare("DELETE FROM buku WHERE id_buku = ?");
+            $stmt->execute([$id]);
+
             echo json_encode([
                 'status' => 'success',
-                'message' => 'Data buku berhasil dihapus'
+                'message' => 'Buku berhasil dihapus'
             ]);
-        } catch(Exception $e) {
+        } catch(PDOException $e) {
             echo json_encode([
                 'status' => 'error',
                 'message' => $e->getMessage()
             ]);
         }
-        break;
-
-    default:
-        echo json_encode([
-            'status' => 'error',
-            'message' => 'Method tidak diizinkan'
-        ]);
         break;
 }
 ?> 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/buku.dart';
-import 'pinjam_buku_page.dart';
+import 'form_pinjam_buku_page.dart';
 
 class DetailBukuPage extends StatelessWidget {
   final Buku buku;
@@ -55,7 +55,7 @@ class DetailBukuPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Book Details
             Text(
               buku.judul,
@@ -98,26 +98,20 @@ class DetailBukuPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            
+
             // Pinjam Button
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
+                style: Theme.of(context).elevatedButtonTheme.style,
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => PinjamBukuPage(buku: buku),
+                      builder: (context) => FormPinjamBukuPage(buku: buku),
                     ),
                   );
                 },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
                 child: const Text(
                   'Pinjam Buku',
                   style: TextStyle(

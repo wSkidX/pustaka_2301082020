@@ -14,7 +14,7 @@ class BukuProvider with ChangeNotifier {
   Buku selectById(int id) =>
       _allBuku.firstWhere((element) => element.idBuku == id);
 
-  Future<bool> addBuku(
+  Future<void> addBuku(
       String judul,
       String pengarang,
       String penerbit,
@@ -30,7 +30,7 @@ class BukuProvider with ChangeNotifier {
           'judul': judul,
           'pengarang': pengarang,
           'penerbit': penerbit,
-          'tahun_terbit': int.parse(tahunTerbit),
+          'tahun_terbit': tahunTerbit,
           'kategori': kategori,
           'cover': cover,
           'deskripsi': deskripsi,
@@ -39,28 +39,16 @@ class BukuProvider with ChangeNotifier {
 
       final data = json.decode(response.body);
       if (data['status'] == 'success') {
-        _allBuku.add(
-          Buku(
-            idBuku: int.parse(data['data']['id_buku'].toString()),
-            judul: judul,
-            pengarang: pengarang,
-            penerbit: penerbit,
-            tahunTerbit: tahunTerbit,
-            kategori: kategori,
-            cover: cover,
-            deskripsi: deskripsi,
-          ),
-        );
-        notifyListeners();
-        return true;
+        await initialData();
+      } else {
+        throw Exception(data['message']);
       }
-      return false;
     } catch (error) {
       rethrow;
     }
   }
 
-  void editBuku(
+  Future<void> updateBuku(
       int id,
       String judul,
       String pengarang,
@@ -68,8 +56,7 @@ class BukuProvider with ChangeNotifier {
       String tahunTerbit,
       String kategori,
       String cover,
-      String deskripsi,
-      BuildContext context) async {
+      String deskripsi) async {
     try {
       final response = await http.put(
         Uri.parse('$_baseUrl?id=$id'),
@@ -87,36 +74,32 @@ class BukuProvider with ChangeNotifier {
 
       final data = json.decode(response.body);
       if (data['status'] == 'success') {
-        final buku = _allBuku.firstWhere((element) => element.idBuku == id);
-        buku.judul = judul;
-        buku.pengarang = pengarang;
-        buku.penerbit = penerbit;
-        buku.tahunTerbit = tahunTerbit;
-        buku.kategori = kategori;
-        buku.cover = cover;
-        buku.deskripsi = deskripsi;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Buku berhasil diubah")),
-        );
-        notifyListeners();
+        await initialData();
+      } else {
+        throw Exception(data['message']);
       }
     } catch (error) {
       rethrow;
     }
   }
 
-  void deleteBuku(int id, BuildContext context) async {
+  Future<void> deleteBuku(int id, BuildContext context) async {
     try {
-      final response = await http.delete(Uri.parse('$_baseUrl?id=$id'));
-      final data = json.decode(response.body);
+      final response = await http.delete(
+        Uri.parse('$_baseUrl?id=$id'),
+        headers: {'Content-Type': 'application/json'},
+      );
 
+      final data = json.decode(response.body);
       if (data['status'] == 'success') {
-        _allBuku.removeWhere((element) => element.idBuku == id);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Buku berhasil dihapus")),
-        );
-        notifyListeners();
+        await initialData();
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Buku berhasil dihapus")),
+          );
+        }
+      } else {
+        throw Exception(data['message']);
       }
     } catch (error) {
       rethrow;
@@ -135,20 +118,38 @@ class BukuProvider with ChangeNotifier {
         for (var buku in bukuList) {
           _allBuku.add(Buku(
             idBuku: int.parse(buku['id_buku'].toString()),
-            judul: buku['judul'] ?? '',
-            pengarang: buku['pengarang'] ?? '',
-            penerbit: buku['penerbit'] ?? '',
-            tahunTerbit: buku['tahun_terbit'] ?? '',
-            kategori: buku['kategori'] ?? '',
-            cover: buku['cover'] ?? '',
-            deskripsi: buku['deskripsi'] ?? '',
+            judul: buku['judul'],
+            pengarang: buku['pengarang'],
+            penerbit: buku['penerbit'],
+            tahunTerbit: buku['tahun_terbit'],
+            kategori: buku['kategori'],
+            cover: buku['cover'],
+            deskripsi: buku['deskripsi'],
+            status: buku['status'] ?? 'Tersedia',
           ));
         }
         notifyListeners();
       }
     } catch (error) {
-      print('Error initialData: $error');
       rethrow;
     }
+  }
+
+  List<Buku> searchBuku(String keyword) {
+    return _allBuku
+        .where((buku) =>
+            buku.judul.toLowerCase().contains(keyword.toLowerCase()) ||
+            buku.pengarang.toLowerCase().contains(keyword.toLowerCase()) ||
+            buku.kategori.toLowerCase().contains(keyword.toLowerCase()))
+        .toList();
+  }
+
+  List<Buku> filterByKategori(String kategori) {
+    if (kategori.toLowerCase() == 'semua' || kategori.isEmpty) {
+      return _allBuku;
+    }
+    return _allBuku
+        .where((buku) => buku.kategori.toLowerCase() == kategori.toLowerCase())
+        .toList();
   }
 }

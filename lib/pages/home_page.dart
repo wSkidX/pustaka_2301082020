@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/anggota_provider.dart';
 import '../providers/buku_provider.dart';
 import '../pages/detailbuku_page.dart';
-import 'package:flutter/cupertino.dart';
+import '../themes/app_theme.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -26,7 +26,9 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    Provider.of<BukuProvider>(context, listen: false).initialData();
+    Future.microtask(() {
+      Provider.of<BukuProvider>(context, listen: false).initialData();
+    });
   }
 
   @override
@@ -35,7 +37,7 @@ class _HomePageState extends State<HomePage> {
     final currentAnggota = anggotaProvider.currentAnggota;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0C356A),
+      backgroundColor: AppTheme.primaryColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -152,23 +154,16 @@ class _HomePageState extends State<HomePage> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(25),
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   child: TextField(
-                    style: const TextStyle(
-                        fontFamily: 'Outfit', color: Colors.white),
+                    style: const TextStyle(color: Colors.black87),
                     decoration: InputDecoration(
                       hintText: 'Cari pustaka terdekat',
-                      hintStyle: TextStyle(
-                        fontFamily: 'Outfit',
-                        color: Colors.white.withOpacity(0.7),
-                      ),
+                      hintStyle: TextStyle(color: Colors.grey[600]),
                       border: InputBorder.none,
-                      icon: Icon(
-                        CupertinoIcons.search,
-                        color: Colors.white.withOpacity(0.7),
-                      ),
+                      icon: Icon(Icons.search, color: Colors.grey[600]),
                     ),
                   ),
                 ),
@@ -245,8 +240,8 @@ class _HomePageState extends State<HomePage> {
                         ),
                         TextButton(
                           onPressed: () {},
-                          child: Row(
-                            children: const [
+                          child: const Row(
+                            children: [
                               Text(
                                 'Lihat semua',
                                 style: TextStyle(

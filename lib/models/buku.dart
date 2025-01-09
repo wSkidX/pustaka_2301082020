@@ -7,7 +7,9 @@ class Buku {
   String kategori;
   String cover;
   String deskripsi;
+  String status;
 
+  // Constructor
   Buku({
     required this.idBuku,
     required this.judul,
@@ -17,5 +19,47 @@ class Buku {
     required this.kategori,
     required this.cover,
     required this.deskripsi,
+    this.status = 'Tersedia',
   });
+
+  // Setters
+  set setIdBuku(int value) => idBuku = value;
+  set setJudul(String value) => judul = value;
+  set setPengarang(String value) => pengarang = value;
+  set setPenerbit(String value) => penerbit = value;
+  set setTahunTerbit(String value) => tahunTerbit = value;
+  set setKategori(String value) => kategori = value;
+  set setCover(String value) => cover = value;
+  set setDeskripsi(String value) => deskripsi = value;
+  set setStatus(String value) => status = value;
+
+  // Factory method untuk membuat objek dari JSON
+  factory Buku.fromJson(Map<String, dynamic> json) {
+    return Buku(
+      idBuku: int.parse(json['id_buku'].toString()),
+      judul: json['judul'] ?? '',
+      pengarang: json['pengarang'] ?? '',
+      penerbit: json['penerbit'] ?? '',
+      tahunTerbit: json['tahun_terbit'] ?? '',
+      kategori: json['kategori'] ?? '',
+      cover: json['cover'] ?? '',
+      deskripsi: json['deskripsi'] ?? '',
+      status: json['status'] ?? 'Tersedia',
+    );
+  }
+
+  // Method untuk mengkonversi objek ke JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'id_buku': idBuku,
+      'judul': judul,
+      'pengarang': pengarang,
+      'penerbit': penerbit,
+      'tahun_terbit': tahunTerbit,
+      'kategori': kategori,
+      'cover': cover,
+      'deskripsi': deskripsi,
+      'status': status,
+    };
+  }
 }

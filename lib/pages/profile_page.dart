@@ -4,7 +4,6 @@ import '../providers/anggota_provider.dart';
 import '../pages/editprofile_page.dart';
 import '../pages/tambah_buku.dart';
 import '../pages/login_page.dart';
-import 'package:flutter/cupertino.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -34,18 +33,18 @@ class ProfilePage extends StatelessWidget {
             Center(
               child: CircleAvatar(
                 radius: 60,
-                backgroundColor: Colors.white,
-                child: Icon(
-                  CupertinoIcons.person_circle_fill,
-                  size: 100,
-                  color: Color(0xFF0C356A),
-                ),
+                backgroundImage: NetworkImage(currentAnggota.foto),
+                onBackgroundImageError: (_, __) => const Icon(Icons.person),
               ),
             ),
             const SizedBox(height: 24),
 
             // Informasi Profil
             Card(
+              margin: const EdgeInsets.symmetric(vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
@@ -75,22 +74,13 @@ class ProfilePage extends StatelessWidget {
                       ],
                     ),
                     const Divider(),
-                    ListTile(
-                      leading: const Icon(CupertinoIcons.number),
-                      title: Text(currentAnggota.nim),
-                    ),
-                    ListTile(
-                      leading: const Icon(CupertinoIcons.person),
-                      title: Text(currentAnggota.nama),
-                    ),
-                    ListTile(
-                      leading: const Icon(CupertinoIcons.location),
-                      title: Text(currentAnggota.alamat),
-                    ),
-                    ListTile(
-                      leading: const Icon(CupertinoIcons.mail),
-                      title: Text(currentAnggota.email),
-                    ),
+                    _buildProfileItem('Nama', currentAnggota.nama),
+                    const Divider(),
+                    _buildProfileItem('NIM', currentAnggota.nim),
+                    const Divider(),
+                    _buildProfileItem('Email', currentAnggota.email),
+                    const Divider(),
+                    _buildProfileItem('Alamat', currentAnggota.alamat),
                     const Divider(),
                     _buildProfileItem('Status',
                         currentAnggota.tingkat == 1 ? 'Admin' : 'Anggota'),
@@ -124,10 +114,7 @@ class ProfilePage extends StatelessWidget {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red,
-                  foregroundColor: Colors.white,
-                ),
+                style: Theme.of(context).elevatedButtonTheme.style,
                 onPressed: () {
                   anggotaProvider.logout();
 

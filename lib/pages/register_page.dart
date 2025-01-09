@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/anggota_provider.dart';
 import '../models/anggota.dart';
-import 'package:flutter/cupertino.dart';
+import '../models/register.dart';
+import '../themes/app_theme.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -25,8 +26,11 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.primaryColor,
       appBar: AppBar(
         title: const Text('Register'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -41,7 +45,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   decoration: const InputDecoration(
                     labelText: 'NIM',
                     border: OutlineInputBorder(),
-                    prefixIcon: Icon(CupertinoIcons.number),
+                    prefixIcon: Icon(Icons.numbers),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -56,7 +60,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   decoration: const InputDecoration(
                     labelText: 'Nama Lengkap',
                     border: OutlineInputBorder(),
-                    prefixIcon: Icon(CupertinoIcons.person),
+                    prefixIcon: Icon(Icons.person),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -71,7 +75,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   decoration: const InputDecoration(
                     labelText: 'Alamat',
                     border: OutlineInputBorder(),
-                    prefixIcon: Icon(CupertinoIcons.location),
+                    prefixIcon: Icon(Icons.home),
                   ),
                   maxLines: 2,
                   validator: (value) {
@@ -87,7 +91,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   decoration: const InputDecoration(
                     labelText: 'Email',
                     border: OutlineInputBorder(),
-                    prefixIcon: Icon(CupertinoIcons.mail),
+                    prefixIcon: Icon(Icons.email),
                   ),
                   keyboardType: TextInputType.emailAddress,
                   validator: (value) {
@@ -106,15 +110,16 @@ class _RegisterPageState extends State<RegisterPage> {
                   decoration: InputDecoration(
                     labelText: 'Password',
                     border: const OutlineInputBorder(),
-                    prefixIcon: const Icon(CupertinoIcons.lock),
+                    prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        _obscureText
-                            ? CupertinoIcons.eye_slash
-                            : CupertinoIcons.eye,
+                        _obscureText ? Icons.visibility : Icons.visibility_off,
                       ),
-                      onPressed: () =>
-                          setState(() => _obscureText = !_obscureText),
+                      onPressed: () {
+                        setState(() {
+                          _obscureText = !_obscureText;
+                        });
+                      },
                     ),
                   ),
                   obscureText: _obscureText,
@@ -134,7 +139,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   decoration: const InputDecoration(
                     labelText: 'URL Foto',
                     border: OutlineInputBorder(),
-                    prefixIcon: Icon(CupertinoIcons.photo),
+                    prefixIcon: Icon(Icons.image),
                     hintText: 'Masukkan URL foto',
                   ),
                 ),
@@ -184,12 +189,17 @@ class _RegisterPageState extends State<RegisterPage> {
           foto: _fotoController.text.isEmpty ? '' : _fotoController.text,
         );
 
-        await Provider.of<AnggotaProvider>(context, listen: false).addAnggota(
-            anggota.nim,
-            anggota.nama,
-            anggota.alamat,
-            anggota.email,
-            anggota.password);
+        final registerData = RegisterModel(
+          nim: anggota.nim,
+          nama: anggota.nama,
+          alamat: anggota.alamat,
+          email: anggota.email,
+          password: anggota.password,
+          foto: anggota.foto,
+        );
+
+        await Provider.of<AnggotaProvider>(context, listen: false)
+            .register(registerData);
 
         if (!mounted) return;
 
