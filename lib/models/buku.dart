@@ -22,17 +22,7 @@ class Buku {
     this.status = 'Tersedia',
   });
 
-  // Setters
-  set setIdBuku(int value) => idBuku = value;
-  set setJudul(String value) => judul = value;
-  set setPengarang(String value) => pengarang = value;
-  set setPenerbit(String value) => penerbit = value;
-  set setTahunTerbit(String value) => tahunTerbit = value;
-  set setKategori(String value) => kategori = value;
-  set setCover(String value) => cover = value;
-  set setDeskripsi(String value) => deskripsi = value;
-  set setStatus(String value) => status = value;
-
+  
   // Factory method untuk membuat objek dari JSON
   factory Buku.fromJson(Map<String, dynamic> json) {
     return Buku(
